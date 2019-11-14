@@ -28,16 +28,11 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gh-open",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "Open a GitHub repository in your browser.",
+	Long:  "Open a GitHub repository in your browser.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Let's go")
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -50,13 +45,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gh-open.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("print", "p", false, "just print the URL")
+	rootCmd.Flags().BoolP("branch", "b", false, "open the branch tree (and not the PR)")
+	rootCmd.Flags().BoolP("version", "v", false, "output the version number")
 }
