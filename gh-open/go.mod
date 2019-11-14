@@ -1,3 +1,3 @@
 module github.com/ffflorian/go-tools/gh-open
 
-require ()
+go 1.13

@@ -20,4 +20,4 @@ jobs:
             dep ensure
         fi
     - name: Build
-      run: go build -v .
+      run: go build -v ./gh-open/gh-open.go
