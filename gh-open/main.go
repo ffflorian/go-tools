@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package main
 
-import "./cmd"
+import "github.com/ffflorian/go-tools/gh-open/cmd"
 
 func main() {
 	cmd.Execute()
