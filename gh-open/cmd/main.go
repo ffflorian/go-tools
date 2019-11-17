@@ -19,19 +19,27 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"os"
 )
 
 var cfgFile string
+var justPrint bool
+var openBranch bool
+var printVersion bool
+var version string = "0.0.1"
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gh-open",
 	Short: "Open a GitHub repository in your browser.",
 	Long:  "Open a GitHub repository in your browser.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Let's go")
+		if printVersion {
+			fmt.Println(version)
+		} else {
+			open.Run("https://google.com/")
+		}
 	},
 }
 
@@ -45,7 +53,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolP("print", "p", false, "just print the URL")
-	rootCmd.Flags().BoolP("branch", "b", false, "open the branch tree (and not the PR)")
-	rootCmd.Flags().BoolP("version", "v", false, "output the version number")
+	rootCmd.PersistentFlags().BoolVarP(&justPrint, "print", "p", false, "just print the URL")
+	rootCmd.PersistentFlags().BoolVarP(&openBranch, "branch", "b", false, "open the branch tree (and not the PR)")
+	rootCmd.PersistentFlags().BoolVarP(&printVersion, "version", "v", false, "output the version number")
 }
