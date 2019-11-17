@@ -18,11 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
-	"github.com/tcnksm/go-gitconfig"
-	"os"
 )
 
 var cfgFile string
@@ -32,26 +34,57 @@ var printVersion bool
 var version string = "0.0.1"
 
 var rootCmd = &cobra.Command{
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 1 {
+			return errors.New("too many arguments")
+		}
+		return nil
+	},
 	Use:   "gh-open",
 	Short: "Open a GitHub repository in your browser.",
 	Long:  "Open a GitHub repository in your browser.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("args", args)
-
-		if printVersion {
+		if printVersion == true {
 			fmt.Println(version)
 			os.Exit(0)
 		}
 
-		fmt.Println(getFullURL())
+		var mainDir string
+		var gitDir string = "."
 
-		open.Run("https://google.com/")
+		if len(args) > 0 {
+			mainDir = args[0]
+		}
+
+		dir, absError := filepath.Abs(mainDir)
+
+		if absError != nil {
+			fmt.Println(absError)
+			os.Exit(1)
+		}
+
+		mainDir = dir
+		fmt.Println("mainDir", mainDir)
+
+		gitDir = findGitDir(mainDir)
+		fmt.Println("gitDir", gitDir)
+
+		fullURL := getFullURL(gitDir)
+
+		fmt.Println("full URL", fullURL)
+
+		if justPrint == true {
+			fmt.Println(fullURL)
+			os.Exit((0))
+		}
+
+		open.Run(fullURL)
 	},
 }
 
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+	if cmdError := rootCmd.Execute(); cmdError != nil {
+		fmt.Println(cmdError)
 		os.Exit(1)
 	}
 }
@@ -62,13 +95,52 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&printVersion, "version", "v", false, "output the version number")
 }
 
-func getFullURL() string {
-	url, err := gitconfig.OriginURL()
+func getFullURL(gitDir string) string {
+	branch := parseGitBranch(gitDir)
 
-	if err != nil {
-		fmt.Println(err)
+	fmt.Println("branch", branch)
+
+	return ""
+}
+
+func parseGitBranch(gitDir string) string {
+	return ""
+}
+
+func findGitDir(mainDir string) string {
+	foundDir, walkError := walk(mainDir, ".git")
+
+	if walkError != nil {
+		fmt.Println(walkError)
 		os.Exit(1)
 	}
 
-	return url
+	return foundDir
+}
+
+func walk(mainDir string, targetDir string) (string, error) {
+	var targetPath = mainDir
+
+	for {
+		var joinedPath = filepath.Join(targetPath, targetDir)
+
+		if _, statError := os.Stat(joinedPath); os.IsNotExist(statError) {
+
+			var absError error
+			targetPath, absError = filepath.Abs(filepath.Join(targetPath, "../"))
+
+			if absError != nil {
+				fmt.Println(absError)
+				return "", absError
+			}
+
+			if filepath.Clean(targetPath) == "/" {
+				return "", errors.New("Could not find a git repository in")
+			}
+
+			continue
+		} else if _, statError := os.Stat(joinedPath); !os.IsNotExist(statError) {
+			return joinedPath, nil
+		}
+	}
 }
