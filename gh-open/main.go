@@ -20,8 +20,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
@@ -51,19 +53,19 @@ var rootCmd = &cobra.Command{
 
 		var mainDir string
 		var gitDir string = "."
+		var absError error
 
 		if len(args) > 0 {
 			mainDir = args[0]
 		}
 
-		dir, absError := filepath.Abs(mainDir)
+		mainDir, absError = filepath.Abs(mainDir)
 
 		if absError != nil {
 			fmt.Println(absError)
 			os.Exit(1)
 		}
 
-		mainDir = dir
 		fmt.Println("mainDir", mainDir)
 
 		gitDir = findGitDir(mainDir)
@@ -104,7 +106,43 @@ func getFullURL(gitDir string) string {
 }
 
 func parseGitBranch(gitDir string) string {
-	return ""
+	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
+
+	if absError != nil {
+		fmt.Println(absError)
+		os.Exit(1)
+	}
+
+	if _, statError := os.Stat(gitHeadFile); os.IsNotExist(statError) {
+		fmt.Println("Could not find git HEAD file in", gitDir)
+		fmt.Println(statError)
+		os.Exit(1)
+	}
+
+	file, openError := os.Open((gitHeadFile))
+
+	if openError != nil {
+		fmt.Println(openError)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	gitHead, readError := ioutil.ReadAll(file)
+
+	if readError != nil {
+		fmt.Println(readError)
+		os.Exit(1)
+	}
+
+	var gitBranchRegEx = regexp.MustCompile(`(?mi)ref: refs/heads/(.*)$`)
+	var branch = gitBranchRegEx.FindSubmatch(gitHead)
+
+	if len(branch) != 2 {
+		fmt.Println("No branch found in git HEAD file")
+		os.Exit(1)
+	}
+
+	return string(branch[1])
 }
 
 func findGitDir(mainDir string) string {
@@ -125,7 +163,6 @@ func walk(mainDir string, targetDir string) (string, error) {
 		var joinedPath = filepath.Join(targetPath, targetDir)
 
 		if _, statError := os.Stat(joinedPath); os.IsNotExist(statError) {
-
 			var absError error
 			targetPath, absError = filepath.Abs(filepath.Join(targetPath, "../"))
 
