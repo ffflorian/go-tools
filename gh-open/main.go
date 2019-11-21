@@ -20,13 +20,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
+	"github.com/ffflorian/go-tools/gh-open/git"
 )
 
 var cfgFile string
@@ -68,7 +67,7 @@ var rootCmd = &cobra.Command{
 
 		fmt.Println("mainDir", mainDir)
 
-		gitDir = findGitDir(mainDir)
+		gitDir = git.FindGitDir(mainDir)
 		fmt.Println("gitDir", gitDir)
 
 		fullURL := getFullURL(gitDir)
@@ -98,86 +97,9 @@ func init() {
 }
 
 func getFullURL(gitDir string) string {
-	branch := parseGitBranch(gitDir)
+	branch := git.ParseGitBranch(gitDir)
 
 	fmt.Println("branch", branch)
 
 	return ""
-}
-
-func parseGitBranch(gitDir string) string {
-	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
-
-	if absError != nil {
-		fmt.Println(absError)
-		os.Exit(1)
-	}
-
-	if _, statError := os.Stat(gitHeadFile); os.IsNotExist(statError) {
-		fmt.Println("Could not find git HEAD file in", gitDir)
-		fmt.Println(statError)
-		os.Exit(1)
-	}
-
-	file, openError := os.Open((gitHeadFile))
-
-	if openError != nil {
-		fmt.Println(openError)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	gitHead, readError := ioutil.ReadAll(file)
-
-	if readError != nil {
-		fmt.Println(readError)
-		os.Exit(1)
-	}
-
-	var gitBranchRegEx = regexp.MustCompile(`(?mi)ref: refs/heads/(.*)$`)
-	var branch = gitBranchRegEx.FindSubmatch(gitHead)
-
-	if len(branch) != 2 {
-		fmt.Println("No branch found in git HEAD file")
-		os.Exit(1)
-	}
-
-	return string(branch[1])
-}
-
-func findGitDir(mainDir string) string {
-	foundDir, walkError := walk(mainDir, ".git")
-
-	if walkError != nil {
-		fmt.Println(walkError)
-		os.Exit(1)
-	}
-
-	return foundDir
-}
-
-func walk(mainDir string, targetDir string) (string, error) {
-	var targetPath = mainDir
-
-	for {
-		var joinedPath = filepath.Join(targetPath, targetDir)
-
-		if _, statError := os.Stat(joinedPath); os.IsNotExist(statError) {
-			var absError error
-			targetPath, absError = filepath.Abs(filepath.Join(targetPath, "../"))
-
-			if absError != nil {
-				fmt.Println(absError)
-				return "", absError
-			}
-
-			if filepath.Clean(targetPath) == "/" {
-				return "", errors.New("Could not find a git repository in")
-			}
-
-			continue
-		} else if _, statError := os.Stat(joinedPath); !os.IsNotExist(statError) {
-			return joinedPath, nil
-		}
-	}
 }
