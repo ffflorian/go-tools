@@ -9,16 +9,15 @@ Run `go get github.com/ffflorian/go-tools/gh-open`.
 ## Usage
 
 ```
-Usage: gh-open [options] [directory]
+Open a GitHub repository in your browser.
 
-Open a GitHub repository in your browser. Opens pull requests by default.
+Usage:
+  gh-open [flags] [directory]
 
-Options:
-  -p, --print             Just print the URL
-  -b, --branch            Open the branch tree (and not the PR)
-  -t, --timeout <number>  Set a custom timeout for HTTP requests
-  -v, --version           output the version number
-  -h, --help              output usage information
+Flags:
+  --version, -v      output the version number
+  --help, -h         output usage information
+  --print, -p        just print the URL
 ```
 
 ## Test
