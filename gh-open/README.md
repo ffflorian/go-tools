@@ -4,12 +4,12 @@ Open a GitHub repository in your browser.
 
 ## Installation
 
-Run `go get github.com/ffflorian/go-tools/gh`.
+Run `go get github.com/ffflorian/go-tools/gh-open`.
 
 ## Usage
 
 ```
-Usage: gh [options] [directory]
+Usage: gh-open [options] [directory]
 
 Open a GitHub repository in your browser. Opens pull requests by default.
 
