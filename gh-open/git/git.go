@@ -28,31 +28,30 @@ import (
 
 const (
 	fullURLRegex   = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
-	rawURLRegex    = `(?mi).*url = (.*)`
 	gitBranchRegex = `(?mi)ref: refs/heads/(.*)$`
+	rawURLRegex    = `(?mi).*url = (.*)`
 )
 
-func readFile(fileName string) []byte {
+func readFile(fileName string) ([]byte, error) {
 	file, openError := os.Open(fileName)
 
-	if openError != nil {
-		fmt.Println(openError)
-		os.Exit(1)
-	}
 	defer file.Close()
+
+	if openError != nil {
+		return []byte(""), openError
+	}
 
 	content, readError := ioutil.ReadAll(file)
 
 	if readError != nil {
-		fmt.Println(readError)
-		os.Exit(1)
+		return []byte(""), readError
 	}
 
-	return content
+	return content, nil
 }
 
 // ParseBranch takes a git directory and returns it's current branch.
-func ParseBranch(gitDir string) []byte {
+func ParseBranch(gitDir string) ([]byte, error) {
 	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
 
 	if absError != nil {
@@ -61,79 +60,79 @@ func ParseBranch(gitDir string) []byte {
 	}
 
 	if _, statError := os.Stat(gitHeadFile); os.IsNotExist(statError) {
-		fmt.Println("Could not find git HEAD file in", gitDir)
-		fmt.Println(statError)
-		os.Exit(1)
+		return []byte(""), fmt.Errorf("Could not find git HEAD file in \"%s\"", gitDir)
 	}
 
-	gitHead := readFile(gitHeadFile)
+	gitHead, readFileError := readFile(gitHeadFile)
+
+	if readFileError != nil {
+		return []byte(""), readFileError
+	}
+
 	gitBranchRegExp := regexp.MustCompile(gitBranchRegex)
 	branch := gitBranchRegExp.FindSubmatch(gitHead)
 
 	if len(branch) != 2 {
-		fmt.Println("No branch found in git HEAD file")
-		os.Exit(1)
+		return []byte(""), errors.New("No branch found in git HEAD file")
 	}
 
-	return branch[1]
+	return branch[1], nil
 }
 
 // ParseRawURL takes a git directory and returns it's raw URL.
-func ParseRawURL(gitDir string) []byte {
+func ParseRawURL(gitDir string) ([]byte, error) {
 	gitConfigFile, absError := filepath.Abs(filepath.Join(gitDir, "config"))
 
 	if absError != nil {
-		fmt.Println(absError)
-		os.Exit(1)
+		return []byte(""), absError
 	}
 
 	if _, statError := os.Stat(gitConfigFile); os.IsNotExist(statError) {
-		fmt.Println("Could not find git config file in", gitDir)
-		fmt.Println(statError)
-		os.Exit(1)
+		return []byte(""), fmt.Errorf("Could not find git config file in \"%s\"", gitDir)
 	}
 
-	gitHead := readFile(gitConfigFile)
+	gitConfig, readFileError := readFile(gitConfigFile)
+
+	if readFileError != nil {
+		return []byte(""), readFileError
+	}
+
 	rawURLRegExp := regexp.MustCompile(rawURLRegex)
-	branch := rawURLRegExp.FindSubmatch(gitHead)
+	branch := rawURLRegExp.FindSubmatch(gitConfig)
 
 	if len(branch) != 2 {
-		fmt.Println("No branch found in git HEAD file")
-		os.Exit(1)
+		return []byte(""), errors.New("No branch found in git config file")
 	}
 
-	return branch[1]
+	return branch[1], nil
 }
 
 // FindGitDir takes a directory and returns it's next git directory.
-func FindGitDir(mainDir string) string {
+func FindGitDir(mainDir string) (string, error) {
 	foundDir, walkError := walk(mainDir, ".git")
 
 	if walkError != nil {
-		fmt.Println(walkError)
-		os.Exit(1)
+		return "", walkError
 	}
 
-	return foundDir
+	return foundDir, nil
 }
 
 func walk(mainDir string, targetDir string) (string, error) {
-	var targetPath = mainDir
-
 	for {
-		var joinedPath = filepath.Join(targetPath, targetDir)
+		var joinedPath = filepath.Join(mainDir, targetDir)
 
 		if _, statError := os.Stat(joinedPath); os.IsNotExist(statError) {
 			var absError error
-			targetPath, absError = filepath.Abs(filepath.Join(targetPath, "../"))
+			mainDir, absError = filepath.Abs(filepath.Join(mainDir, "../"))
 
 			if absError != nil {
 				fmt.Println(absError)
 				return "", absError
 			}
 
-			if filepath.Clean(targetPath) == "/" {
-				return "", errors.New("Could not find a git repository in")
+			if filepath.Clean(mainDir) == "/" {
+				return "", fmt.Errorf("Could not find a git repository in \"%s\"", mainDir)
 			}
 
 			continue
@@ -144,11 +143,25 @@ func walk(mainDir string, targetDir string) (string, error) {
 }
 
 // GetFullURL takes a directory and (given it's inside a git repository) returns the repository's full URL.
-func GetFullURL(mainDir string) string {
-	gitDir := FindGitDir(mainDir)
+func GetFullURL(mainDir string) (string, error) {
+	gitDir, findGitDirError := FindGitDir(mainDir)
 
-	gitRawURL := ParseRawURL(gitDir)
-	gitBranch := ParseBranch(gitDir)
+	if findGitDirError != nil {
+		return "", findGitDirError
+	}
+
+	gitRawURL, gitRawURLError := ParseRawURL(gitDir)
+
+	if gitRawURLError != nil {
+		return "", gitRawURLError
+	}
+
+	gitBranch, gitBranchError := ParseBranch(gitDir)
+
+	if gitBranchError != nil {
+		return "", gitBranchError
+	}
+
 	fullURLRegExp := regexp.MustCompile(fullURLRegex)
 	fullURLMatch := fullURLRegExp.FindSubmatch(gitRawURL)
 
@@ -158,6 +171,7 @@ func GetFullURL(mainDir string) string {
 	}
 
 	parsedURL := fullURLRegExp.ReplaceAll(gitRawURL, []byte("https://$1/$2"))
+	fullURL := fmt.Sprintf("%s/tree/%s", string(parsedURL), string(gitBranch))
 
-	return fmt.Sprintf("%s/tree/%s", string(parsedURL), string(gitBranch))
+	return fullURL, nil
 }

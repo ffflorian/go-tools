@@ -28,9 +28,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var justPrint bool
-var openBranch bool
-var printVersion bool
+var (
+	justPrint    bool
+	openBranch   bool
+	printVersion bool
+)
 
 const version = "0.0.1"
 
@@ -43,7 +45,6 @@ var rootCmd = &cobra.Command{
 	},
 	Use:   "gh-open",
 	Short: "Open a GitHub repository in your browser.",
-	Long:  "Open a GitHub repository in your browser.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if printVersion == true {
 			fmt.Println(version)
@@ -64,7 +65,12 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fullURL := git.GetFullURL(mainDir)
+		fullURL, fullURLError := git.GetFullURL(mainDir)
+
+		if fullURLError != nil {
+			fmt.Println(fullURLError)
+			os.Exit(1)
+		}
 
 		if justPrint == true {
 			fmt.Println(fullURL)
