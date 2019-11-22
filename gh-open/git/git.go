@@ -26,9 +26,11 @@ import (
 	"regexp"
 )
 
-var fullURLRegex = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
-var rawURLRegex = `(?mi).*url = (.*)`
-var gitBranchRegex = `(?mi)ref: refs/heads/(.*)$`
+const (
+	fullURLRegex   = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
+	rawURLRegex    = `(?mi).*url = (.*)`
+	gitBranchRegex = `(?mi)ref: refs/heads/(.*)$`
+)
 
 func readFile(fileName string) []byte {
 	file, openError := os.Open(fileName)

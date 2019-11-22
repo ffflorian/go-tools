@@ -28,11 +28,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cfgFile string
 var justPrint bool
 var openBranch bool
 var printVersion bool
-var version string = "0.0.1"
+
+const version = "0.0.1"
 
 var rootCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
