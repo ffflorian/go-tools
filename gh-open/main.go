@@ -23,9 +23,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ffflorian/go-tools/gh-open/git"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
-	"github.com/ffflorian/go-tools/gh-open/git"
 )
 
 var cfgFile string
@@ -51,7 +51,6 @@ var rootCmd = &cobra.Command{
 		}
 
 		var mainDir string
-		var gitDir string = "."
 		var absError error
 
 		if len(args) > 0 {
@@ -65,18 +64,11 @@ var rootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("mainDir", mainDir)
-
-		gitDir = git.FindGitDir(mainDir)
-		fmt.Println("gitDir", gitDir)
-
-		fullURL := getFullURL(gitDir)
-
-		fmt.Println("full URL", fullURL)
+		fullURL := git.GetFullURL(mainDir)
 
 		if justPrint == true {
 			fmt.Println(fullURL)
-			os.Exit((0))
+			os.Exit(0)
 		}
 
 		open.Run(fullURL)
@@ -94,12 +86,4 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&justPrint, "print", "p", false, "just print the URL")
 	rootCmd.PersistentFlags().BoolVarP(&openBranch, "branch", "b", false, "open the branch tree (and not the PR)")
 	rootCmd.PersistentFlags().BoolVarP(&printVersion, "version", "v", false, "output the version number")
-}
-
-func getFullURL(gitDir string) string {
-	branch := git.ParseGitBranch(gitDir)
-
-	fmt.Println("branch", branch)
-
-	return ""
 }
