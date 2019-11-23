@@ -23,13 +23,13 @@ import (
 	"strings"
 )
 
-// Logger is a configuration struct for the logger
-type Logger struct {
+// SimpleLogger is a configuration struct for the logger
+type SimpleLogger struct {
 	Enabled bool
 }
 
 // New returns a new instance of Logger
-func New(enabled bool, checkEnvironment bool) Logger {
+func New(enabled bool, checkEnvironment bool) SimpleLogger {
 	if checkEnvironment == true {
 		DEBUG := os.Getenv("DEBUG")
 		if strings.Contains(DEBUG, "gh-open") {
@@ -37,19 +37,19 @@ func New(enabled bool, checkEnvironment bool) Logger {
 		}
 	}
 
-	logger := Logger{Enabled: enabled}
+	logger := SimpleLogger{Enabled: enabled}
 	return logger
 }
 
 // Log logs one or more unformatted messages if the logger is enabled
-func (logger Logger) Log(messages ...interface{}) {
+func (logger SimpleLogger) Log(messages ...interface{}) {
 	if logger.Enabled == true {
 		fmt.Printf("debug: %s", fmt.Sprintln(messages...))
 	}
 }
 
 // Logf logs one or more formatted messages if the logger is enabled
-func (logger Logger) Logf(format string, messages ...interface{}) {
+func (logger SimpleLogger) Logf(format string, messages ...interface{}) {
 	if logger.Enabled == true {
 		fmt.Printf("debug: %s\n", fmt.Sprintf(format, messages...))
 	}
