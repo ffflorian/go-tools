@@ -34,6 +34,7 @@ const (
 
 func main() {
 	justPrint := false
+	justBranch := false
 	logger := simplelogger.New(false, true)
 	util := u.New(name, version, description)
 
@@ -57,6 +58,10 @@ func main() {
 		justPrint = true
 	}
 
+	if util.FlagContext.IsSet("b") {
+		justBranch = true
+	}
+
 	gitClient := gitclient.New(logger)
 
 	argsDir, argsDirError := util.GetArgsDir()
@@ -67,6 +72,16 @@ func main() {
 
 	fullURL, fullURLError := gitClient.GetFullURL(mainDir)
 	util.CheckError(fullURLError, false)
+
+	if justBranch == false {
+		pullRequest, pullRequestError := gitClient.GetPullRequestURL(fullURL)
+		if pullRequestError != nil {
+			logger.Log(pullRequestError)
+		}
+		if pullRequest != "" {
+			fullURL = pullRequest
+		}
+	}
 
 	if justPrint == true {
 		util.LogAndExit(fullURL)

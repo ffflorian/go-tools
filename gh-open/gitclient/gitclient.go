@@ -25,23 +25,26 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/ffflorian/go-tools/gh-open/githubclient"
 	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 )
 
 // Git is a configuration struct for the git client
 type Git struct {
-	Logger simplelogger.Logger
+	Logger simplelogger.SimpleLogger
 }
 
 const (
-	fullURLRegex   = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
-	gitBranchRegex = `(?mi)ref: refs/heads/(.*)$`
-	rawURLRegex    = `(?mi).*url = (.*)`
+	fullURLRegex     = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
+	gitBranchRegex   = `(?mi)ref: refs/heads/(.*)$`
+	pullRequestRegex = `(?i)github\.com/([^\/]+)/([^/]+)/tree/(.*)`
+	rawURLRegex      = `(?mi).*url = (.*)`
 )
 
 // New returns a new instance of Git
-func New(logger simplelogger.Logger) Git {
+func New(logger simplelogger.SimpleLogger) Git {
 	git := Git{Logger: logger}
 	return git
 }
@@ -203,4 +206,30 @@ func (gitClient Git) GetFullURL(mainDir string) (string, error) {
 	fullURL := fmt.Sprintf("%s/tree/%s", string(parsedURL), string(gitBranch))
 
 	return fullURL, nil
+}
+
+// GetPullRequestURL gets the according pull request URL from GitHub
+// if there is one
+func (gitClient Git) GetPullRequestURL(gitFullURL string) (string, error) {
+	pullRequestRegExp := regexp.MustCompile(pullRequestRegex)
+	fullURLMatches := pullRequestRegExp.FindStringSubmatch(gitFullURL)
+
+	if len(fullURLMatches) != 4 {
+		return "", errors.New("Could not convert GitHub URL to pull request")
+	}
+
+	repoUser := fullURLMatches[1]
+	repoName := fullURLMatches[2]
+	repoBranch := fullURLMatches[3]
+
+	gitClient.Logger.Logf("Got user \"%s\", repo name \"%s\" and branch \"%s\"", repoUser, repoName, repoBranch)
+
+	githubClient := githubclient.New(gitClient.Logger, time.Second*10)
+
+	pullRequest, pullRequestError := githubClient.GetPullRequestByBranch(repoUser, repoName, repoBranch)
+	if pullRequestError != nil {
+		return "", pullRequestError
+	}
+
+	return pullRequest, nil
 }

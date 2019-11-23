@@ -43,10 +43,10 @@ func New(name string, version string, description string) Util {
 // CheckFlags checks which command line flags are set
 func (util Util) CheckFlags() {
 	util.FlagContext.NewBoolFlag("print", "p", "just print the URL")
+	util.FlagContext.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
 	util.FlagContext.NewBoolFlag("debug", "d", "enable debug mode")
 	util.FlagContext.NewBoolFlag("version", "v", "output the version number")
 	util.FlagContext.NewBoolFlag("help", "h", "output usage information")
-	// fc.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
 
 	parseError := util.FlagContext.Parse(os.Args...)
 	util.CheckError(parseError, false)
