@@ -41,9 +41,16 @@ func New(enabled bool, checkEnvironment bool) Logger {
 	return logger
 }
 
-// Log logs one or more messages if the logger is enabled
+// Log logs one or more unformatted messages if the logger is enabled
 func (logger Logger) Log(messages ...interface{}) {
 	if logger.Enabled == true {
-		fmt.Print("debug: ", fmt.Sprintln(messages...))
+		fmt.Printf("debug: %s", fmt.Sprintln(messages...))
+	}
+}
+
+// Logf logs one or more formatted messages if the logger is enabled
+func (logger Logger) Logf(format string, messages ...interface{}) {
+	if logger.Enabled == true {
+		fmt.Printf("debug: %s\n", fmt.Sprintf(format, messages...))
 	}
 }

@@ -25,32 +25,36 @@ import (
 	"github.com/simonleung8/flags"
 )
 
-var flagContext flags.FlagContext
-
-func init() {
-	flagContext = flags.New()
+// Util is a configuration struct for the util
+type Util struct {
+	Description string
+	FlagContext flags.FlagContext
+	Name        string
+	Version     string
 }
 
-// GetFlagContext just returns the flag context
-func GetFlagContext() flags.FlagContext {
-	return flagContext
+// New returns a new instance of Util
+func New(name string, version string, description string) Util {
+	flagContext := flags.New()
+	util := Util{Description: description, FlagContext: flagContext, Name: name, Version: version}
+	return util
 }
 
 // CheckFlags checks which command line flags are set
-func CheckFlags(name string, version string, description string) {
-	flagContext.NewBoolFlag("print", "p", "just print the URL")
-	flagContext.NewBoolFlag("debug", "d", "enable debug mode")
-	flagContext.NewBoolFlag("version", "v", "output the version number")
-	flagContext.NewBoolFlag("help", "h", "output usage information")
+func (util Util) CheckFlags() {
+	util.FlagContext.NewBoolFlag("print", "p", "just print the URL")
+	util.FlagContext.NewBoolFlag("debug", "d", "enable debug mode")
+	util.FlagContext.NewBoolFlag("version", "v", "output the version number")
+	util.FlagContext.NewBoolFlag("help", "h", "output usage information")
 	// fc.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
 
-	parseError := flagContext.Parse(os.Args...)
-	CheckError(parseError)
+	parseError := util.FlagContext.Parse(os.Args...)
+	util.CheckError(parseError, false)
 }
 
 // GetArgsDir returns the directory provided via arguments
-func GetArgsDir() (string, error) {
-	args := flagContext.Args()
+func (util Util) GetArgsDir() (string, error) {
+	args := util.FlagContext.Args()
 
 	switch len(args) {
 	case 0:
@@ -66,26 +70,28 @@ func GetArgsDir() (string, error) {
 }
 
 // CheckError checks the error and if it exists, exits with exit code 1
-func CheckError(err error) {
+func (util Util) CheckError(err error, printUsage bool) {
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		if printUsage {
+			fmt.Fprintln(os.Stderr, util.GetUsage())
+		}
 		os.Exit(1)
 	}
 }
 
-// PrintUsageAndExit prints the usage text and exits with exit code 0
-func PrintUsageAndExit(name string, description string) {
-	fmt.Printf(
-		"%s\n\nUsage:\n  %s [flags] [directory]\n\nFlags:\n%s",
-		description,
-		name,
-		flagContext.ShowUsage(2),
+// GetUsage returns the usage text
+func (util Util) GetUsage() string {
+	return fmt.Sprintf(
+		"%s\n\nUsage:\n  %s [options] [directory]\n\nOptions:\n%s",
+		util.Description,
+		util.Name,
+		util.FlagContext.ShowUsage(2),
 	)
-	os.Exit(0)
 }
 
 // LogAndExit logs one or more messages and exits with exit code 0
-func LogAndExit(messages ...interface{}) {
+func (util Util) LogAndExit(messages ...interface{}) {
 	fmt.Println(messages...)
 	os.Exit(0)
 }
