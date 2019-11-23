@@ -39,6 +39,7 @@ func GetFlagContext() flags.FlagContext {
 // CheckFlags checks which command line flags are set
 func CheckFlags(name string, version string, description string) {
 	flagContext.NewBoolFlag("print", "p", "just print the URL")
+	flagContext.NewBoolFlag("debug", "d", "enable debug mode")
 	flagContext.NewBoolFlag("version", "v", "output the version number")
 	flagContext.NewBoolFlag("help", "h", "output usage information")
 	// fc.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
@@ -75,7 +76,7 @@ func CheckError(err error) {
 // PrintUsageAndExit prints the usage text and exits with exit code 0
 func PrintUsageAndExit(name string, description string) {
 	fmt.Printf(
-		"%s\n\nUsage:\n%s [flags] [directory]\n\nFlags:\n%s",
+		"%s\n\nUsage:\n  %s [flags] [directory]\n\nFlags:\n%s",
 		description,
 		name,
 		flagContext.ShowUsage(2),
@@ -83,8 +84,8 @@ func PrintUsageAndExit(name string, description string) {
 	os.Exit(0)
 }
 
-// PrintAndExit prints one or more messages and exits with exit code 0
-func PrintAndExit(messages ...interface{}) {
+// LogAndExit logs one or more messages and exits with exit code 0
+func LogAndExit(messages ...interface{}) {
 	fmt.Println(messages...)
 	os.Exit(0)
 }

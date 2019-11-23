@@ -20,7 +20,8 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/ffflorian/go-tools/gh-open/git"
+	"github.com/ffflorian/go-tools/gh-open/gitclient"
+	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 	"github.com/ffflorian/go-tools/gh-open/util"
 	"github.com/skratchdot/open-golang/open"
 )
@@ -28,16 +29,26 @@ import (
 const (
 	description = "Open a GitHub repository in your browser."
 	name        = "gh-open"
-	version     = "0.0.2"
+	version     = "0.0.3"
 )
 
-var justPrint = false
+var (
+	gitClient gitclient.Git
+	justPrint = false
+	logger    simplelogger.Logger
+)
 
 func init() {
+	logger = simplelogger.New(false, true)
+
 	util.CheckFlags(name, version, description)
 
+	if util.GetFlagContext().IsSet("d") {
+		logger.Enabled = true
+	}
+
 	if util.GetFlagContext().IsSet("v") {
-		util.PrintAndExit(version)
+		util.LogAndExit(version)
 	}
 
 	if util.GetFlagContext().IsSet("h") {
@@ -47,6 +58,8 @@ func init() {
 	if util.GetFlagContext().IsSet("p") {
 		justPrint = true
 	}
+
+	gitClient = gitclient.New(logger)
 }
 
 func main() {
@@ -56,11 +69,11 @@ func main() {
 	mainDir, absError := filepath.Abs(argsDir)
 	util.CheckError(absError)
 
-	fullURL, fullURLError := git.GetFullURL(mainDir)
+	fullURL, fullURLError := gitClient.GetFullURL(mainDir)
 	util.CheckError(fullURLError)
 
 	if justPrint == true {
-		util.PrintAndExit(fullURL)
+		util.LogAndExit(fullURL)
 	}
 
 	open.Run(fullURL)

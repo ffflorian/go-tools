@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package git
+package gitclient
 
 import (
 	"errors"
@@ -24,7 +24,15 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 )
+
+// Git is a configuration struct for the git client
+type Git struct {
+	Logger simplelogger.Logger
+}
 
 const (
 	fullURLRegex   = `(?i)^(?:.+?://(?:.+@)?|(?:.+@)?)(.+?)[:/](.+?)(?:.git)?/?$`
@@ -32,7 +40,13 @@ const (
 	rawURLRegex    = `(?mi).*url = (.*)`
 )
 
-func readFile(fileName string) ([]byte, error) {
+// New returns a new instance of Git
+func New(logger simplelogger.Logger) Git {
+	git := Git{Logger: logger}
+	return git
+}
+
+func (gitClient Git) readFile(fileName string) ([]byte, error) {
 	file, openError := os.Open(fileName)
 
 	defer file.Close()
@@ -51,7 +65,7 @@ func readFile(fileName string) ([]byte, error) {
 }
 
 // ParseBranch takes a git directory and returns it's current branch.
-func ParseBranch(gitDir string) ([]byte, error) {
+func (gitClient Git) ParseBranch(gitDir string) ([]byte, error) {
 	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
 
 	if absError != nil {
@@ -62,11 +76,13 @@ func ParseBranch(gitDir string) ([]byte, error) {
 		return nil, fmt.Errorf("Could not find git HEAD file in \"%s\"", gitDir)
 	}
 
-	gitHead, readFileError := readFile(gitHeadFile)
+	gitHead, readFileError := gitClient.readFile(gitHeadFile)
 
 	if readFileError != nil {
 		return nil, readFileError
 	}
+
+	gitClient.Logger.Log("Read git head file:", strings.TrimSpace(string(gitHead)))
 
 	gitBranchRegExp := regexp.MustCompile(gitBranchRegex)
 	branch := gitBranchRegExp.FindSubmatch(gitHead)
@@ -79,35 +95,37 @@ func ParseBranch(gitDir string) ([]byte, error) {
 }
 
 // ParseRawURL takes a git directory and returns it's raw URL.
-func ParseRawURL(gitDir string) ([]byte, error) {
+func (gitClient Git) ParseRawURL(gitDir string) ([]byte, error) {
 	gitConfigFile, absError := filepath.Abs(filepath.Join(gitDir, "config"))
 
 	if absError != nil {
 		return nil, absError
 	}
 
+	gitClient.Logger.Log("Found git config file in:", gitConfigFile)
+
 	if _, statError := os.Stat(gitConfigFile); os.IsNotExist(statError) {
 		return nil, fmt.Errorf("Could not find git config file in \"%s\"", gitDir)
 	}
 
-	gitConfig, readFileError := readFile(gitConfigFile)
+	gitConfig, readFileError := gitClient.readFile(gitConfigFile)
 
 	if readFileError != nil {
 		return nil, readFileError
 	}
 
 	rawURLRegExp := regexp.MustCompile(rawURLRegex)
-	branch := rawURLRegExp.FindSubmatch(gitConfig)
+	rawURLMatch := rawURLRegExp.FindSubmatch(gitConfig)
 
-	if len(branch) != 2 {
-		return nil, errors.New("No branch found in git config file")
+	if len(rawURLMatch) != 2 {
+		return nil, errors.New("No raw URL found in git config file")
 	}
 
-	return branch[1], nil
+	return rawURLMatch[1], nil
 }
 
 // FindGitDir takes a directory and returns it's next git directory.
-func FindGitDir(mainDir string) (string, error) {
+func (gitClient Git) FindGitDir(mainDir string) (string, error) {
 	foundDir, walkError := walk(mainDir, ".git")
 
 	if walkError != nil {
@@ -144,20 +162,24 @@ func walk(mainDir string, targetDir string) (string, error) {
 }
 
 // GetFullURL takes a directory and (given it's inside a git repository) returns the repository's full URL.
-func GetFullURL(mainDir string) (string, error) {
-	gitDir, findGitDirError := FindGitDir(mainDir)
+func (gitClient Git) GetFullURL(mainDir string) (string, error) {
+	gitDir, findGitDirError := gitClient.FindGitDir(mainDir)
 
 	if findGitDirError != nil {
 		return "", findGitDirError
 	}
 
-	gitRawURL, gitRawURLError := ParseRawURL(gitDir)
+	gitClient.Logger.Log("Found git dir in:", string(gitDir))
+
+	gitRawURL, gitRawURLError := gitClient.ParseRawURL(gitDir)
 
 	if gitRawURLError != nil {
 		return "", gitRawURLError
 	}
 
-	gitBranch, gitBranchError := ParseBranch(gitDir)
+	gitClient.Logger.Log("Found raw URL:", string(gitRawURL))
+
+	gitBranch, gitBranchError := gitClient.ParseBranch(gitDir)
 
 	if gitBranchError != nil {
 		return "", gitBranchError
@@ -171,6 +193,8 @@ func GetFullURL(mainDir string) (string, error) {
 	}
 
 	parsedURL := fullURLRegExp.ReplaceAll(gitRawURL, []byte("https://$1/$2"))
+	gitClient.Logger.Log("Found parsed URL:", string(parsedURL))
+
 	fullURL := fmt.Sprintf("%s/tree/%s", string(parsedURL), string(gitBranch))
 
 	return fullURL, nil

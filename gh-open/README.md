@@ -15,9 +15,10 @@ Usage:
   gh-open [flags] [directory]
 
 Flags:
+  --print, -p        just print the URL
+  --debug, -d        enable debug mode
   --version, -v      output the version number
   --help, -h         output usage information
-  --print, -p        just print the URL
 ```
 
 ## Test
