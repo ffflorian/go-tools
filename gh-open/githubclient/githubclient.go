@@ -37,7 +37,7 @@ type GitHubClient struct {
 type PullRequest struct {
 	Head struct {
 		Branch string `json:"ref"`
-	} `json:head`
+	} `json:"head"`
 	Links struct {
 		HTML struct {
 			Href string `json:"href"`
@@ -98,7 +98,7 @@ func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName strin
 	return *pullRequests, nil
 }
 
-// GetPullRequestByBranch gets pull requests from GitHub
+// GetPullRequestByBranch returns a pull request URL for the specified branch if it exists
 func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoName string, branch string) (string, error) {
 	pullRequests, pullRequestError := githubClient.GetPullRequests(repoUser, repoName)
 
@@ -106,18 +106,13 @@ func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoNam
 		return "", pullRequestError
 	}
 
-	var pullRequest *PullRequest
-	for index, pullRequest := range pullRequests {
+	for _, pullRequest := range pullRequests {
 		if pullRequest.Head.Branch == branch {
-			pullRequest = pullRequests[index]
+			pullRequestURL := pullRequest.Links.HTML.Href
+			githubClient.Logger.Logf("Got pull request URL \"%s\"", pullRequestURL)
+			return pullRequestURL, nil
 		}
 	}
 
-	if pullRequest == nil {
-		return "", nil
-	}
-
-	pullRequestURL := pullRequest.Links.HTML.Href
-	githubClient.Logger.Logf("Got pull request URL \"%s\"", pullRequestURL)
-	return pullRequestURL, nil
+	return "", nil
 }
