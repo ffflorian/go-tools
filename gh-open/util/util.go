@@ -36,13 +36,19 @@ type Util struct {
 // New returns a new instance of Util
 func New(name string, version string, description string) Util {
 	flagContext := flags.New()
-	util := Util{Description: description, FlagContext: flagContext, Name: name, Version: version}
+	util := Util{
+		Description: description,
+		FlagContext: flagContext,
+		Name:        name,
+		Version:     version,
+	}
 	return util
 }
 
 // CheckFlags checks which command line flags are set
 func (util Util) CheckFlags() {
 	util.FlagContext.NewBoolFlag("print", "p", "just print the URL")
+	util.FlagContext.NewIntFlagWithDefault("timeout", "t", "Set a custom timeout for HTTP requests", 2000)
 	util.FlagContext.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
 	util.FlagContext.NewBoolFlag("debug", "d", "enable debug mode")
 	util.FlagContext.NewBoolFlag("version", "v", "output the version number")

@@ -49,17 +49,18 @@ const baseURL = "https://api.github.com"
 
 // New returns a new instance of GitHubClient
 func New(logger simplelogger.SimpleLogger, timeout time.Duration) GitHubClient {
-	client := GitHubClient{Logger: logger, Timeout: timeout}
+	client := GitHubClient{
+		Logger:  logger,
+		Timeout: timeout,
+	}
 	return client
 }
 
 func (githubClient GitHubClient) request(urlPath string) ([]byte, error) {
-	var httpClient = &http.Client{
-		Timeout: githubClient.Timeout,
-	}
+	var httpClient = &http.Client{Timeout: githubClient.Timeout}
 	var fullURL = fmt.Sprintf("%s/%s", baseURL, urlPath)
 
-	githubClient.Logger.Logf("Sending GET request to \"%s\" ...", fullURL)
+	githubClient.Logger.Logf("Sending GET request to \"%s\" with timeout \"%s\" ...", fullURL, githubClient.Timeout)
 
 	response, responseError := httpClient.Get(fullURL)
 	if responseError != nil {
@@ -83,7 +84,8 @@ func (githubClient GitHubClient) request(urlPath string) ([]byte, error) {
 func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName string) ([]PullRequest, error) {
 	var pullRequests *[]PullRequest
 
-	buffer, requestError := githubClient.request(fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName))
+	fullURL := fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName)
+	buffer, requestError := githubClient.request(fullURL)
 	if requestError != nil {
 		return nil, requestError
 	}

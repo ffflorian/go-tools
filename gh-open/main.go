@@ -22,7 +22,7 @@ import (
 
 	"github.com/ffflorian/go-tools/gh-open/gitclient"
 	"github.com/ffflorian/go-tools/gh-open/simplelogger"
-	u "github.com/ffflorian/go-tools/gh-open/util"
+	"github.com/ffflorian/go-tools/gh-open/util"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -33,45 +33,45 @@ const (
 )
 
 func main() {
-	justPrint := false
-	justBranch := false
-	logger := simplelogger.New(false, true)
-	util := u.New(name, version, description)
+	var (
+		logger = simplelogger.New(false, true)
+		utils  = util.New(name, version, description)
+	)
 
-	util.CheckFlags()
+	utils.CheckFlags()
 
-	if util.FlagContext.IsSet("d") {
+	justPrint := utils.FlagContext.Bool("p")
+	justBranch := utils.FlagContext.Bool("b")
+	timeout := utils.FlagContext.Int("t")
+
+	if utils.FlagContext.IsSet("d") {
 		logger.Enabled = true
 	}
 
-	logger.Log("Got arguments:", util.FlagContext.Args()[1:])
+	logger.Log("Got arguments:", utils.FlagContext.Args()[1:])
 
-	if util.FlagContext.IsSet("v") {
-		util.LogAndExit(version)
+	if utils.FlagContext.IsSet("v") {
+		utils.LogAndExit(version)
 	}
 
-	if util.FlagContext.IsSet("h") {
-		util.LogAndExit(util.GetUsage())
+	if utils.FlagContext.IsSet("h") {
+		utils.LogAndExit(utils.GetUsage())
 	}
 
-	if util.FlagContext.IsSet("p") {
-		justPrint = true
+	if utils.FlagContext.IsSet("t") {
+		utils.FlagContext.Int("t")
 	}
 
-	if util.FlagContext.IsSet("b") {
-		justBranch = true
-	}
+	gitClient := gitclient.New(logger, timeout)
 
-	gitClient := gitclient.New(logger)
-
-	argsDir, argsDirError := util.GetArgsDir()
-	util.CheckError(argsDirError, true)
+	argsDir, argsDirError := utils.GetArgsDir()
+	utils.CheckError(argsDirError, true)
 
 	mainDir, absError := filepath.Abs(argsDir)
-	util.CheckError(absError, false)
+	utils.CheckError(absError, false)
 
 	fullURL, fullURLError := gitClient.GetFullURL(mainDir)
-	util.CheckError(fullURLError, false)
+	utils.CheckError(fullURLError, false)
 
 	if justBranch == false {
 		pullRequest, pullRequestError := gitClient.GetPullRequestURL(fullURL)
@@ -84,7 +84,7 @@ func main() {
 	}
 
 	if justPrint == true {
-		util.LogAndExit(fullURL)
+		utils.LogAndExit(fullURL)
 	}
 
 	open.Run(fullURL)
