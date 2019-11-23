@@ -85,13 +85,13 @@ func (gitClient Git) ParseBranch(gitDir string) ([]byte, error) {
 	gitClient.Logger.Log("Read git head file:", strings.TrimSpace(string(gitHead)))
 
 	gitBranchRegExp := regexp.MustCompile(gitBranchRegex)
-	branch := gitBranchRegExp.FindSubmatch(gitHead)
+	branchMatches := gitBranchRegExp.FindSubmatch(gitHead)
 
-	if len(branch) != 2 {
+	if len(branchMatches) != 2 {
 		return nil, errors.New("No branch found in git HEAD file")
 	}
 
-	return branch[1], nil
+	return branchMatches[1], nil
 }
 
 // ParseRawURL takes a git directory and returns it's raw URL.
@@ -115,13 +115,13 @@ func (gitClient Git) ParseRawURL(gitDir string) ([]byte, error) {
 	}
 
 	rawURLRegExp := regexp.MustCompile(rawURLRegex)
-	rawURLMatch := rawURLRegExp.FindSubmatch(gitConfig)
+	rawURLMatches := rawURLRegExp.FindSubmatch(gitConfig)
 
-	if len(rawURLMatch) != 2 {
+	if len(rawURLMatches) != 2 {
 		return nil, errors.New("No raw URL found in git config file")
 	}
 
-	return rawURLMatch[1], nil
+	return rawURLMatches[1], nil
 }
 
 // FindGitDir takes a directory and returns it's next git directory.
@@ -186,9 +186,9 @@ func (gitClient Git) GetFullURL(mainDir string) (string, error) {
 	}
 
 	fullURLRegExp := regexp.MustCompile(fullURLRegex)
-	fullURLMatch := fullURLRegExp.FindSubmatch(gitRawURL)
+	fullURLMatches := fullURLRegExp.FindSubmatch(gitRawURL)
 
-	if len(fullURLMatch) != 3 {
+	if len(fullURLMatches) != 3 {
 		return "", errors.New("Could not convert raw URL")
 	}
 
