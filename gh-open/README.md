@@ -21,6 +21,14 @@ Flags:
   --help, -h         output usage information
 ```
 
+Hint: You can also enable the debug mode by setting the environment variable `DEBUG` to "gh-open".
+
+Example:
+
+```
+NODE_DEBUG="gh-open" gh-open
+```
+
 ## Test
 
 ```
