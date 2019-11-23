@@ -35,14 +35,14 @@ type GitHubClient struct {
 
 // PullRequest represents a pull request on GitHub
 type PullRequest struct {
-	_links *struct {
-		html *struct {
-			href *string
-		}
-	}
-	head *struct {
-		ref *string
-	}
+	Head struct {
+		Branch string `json:"ref"`
+	} `json:head`
+	Links struct {
+		HTML struct {
+			Href string `json:"href"`
+		} `json:"html"`
+	} `json:"_links"`
 }
 
 const baseURL = "https://api.github.com"
@@ -81,23 +81,21 @@ func (githubClient GitHubClient) request(urlPath string) ([]byte, error) {
 // GetPullRequests gets pull requests from GitHub,
 // see https://developer.github.com/v3/pulls/#list-pull-requests
 func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName string) ([]PullRequest, error) {
-	var pullRequests []PullRequest
+	var pullRequests *[]PullRequest
 
 	buffer, requestError := githubClient.request(fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName))
 	if requestError != nil {
 		return nil, requestError
 	}
 
-	githubClient.Logger.Log("Got buffer", string(buffer))
-
 	unmarshalError := json.Unmarshal(buffer, &pullRequests)
 	if unmarshalError != nil {
 		return nil, unmarshalError
 	}
 
-	githubClient.Logger.Log("Got pull requests", pullRequests)
+	githubClient.Logger.Log("Got pull requests", *pullRequests)
 
-	return pullRequests, nil
+	return *pullRequests, nil
 }
 
 // GetPullRequestByBranch gets pull requests from GitHub
@@ -110,7 +108,7 @@ func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoNam
 
 	var pullRequest *PullRequest
 	for index, pullRequest := range pullRequests {
-		if pullRequest.head != nil && (pullRequest.head.ref != nil) && (pullRequest.head.ref == &branch) {
+		if pullRequest.Head.Branch == branch {
 			pullRequest = pullRequests[index]
 		}
 	}
@@ -119,11 +117,7 @@ func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoNam
 		return "", nil
 	}
 
-	if pullRequest._links == nil || pullRequest._links.html == nil || pullRequest._links.html.href == nil {
-		return "", nil
-	}
-
-	pullRequestURL := pullRequest._links.html.href
-	githubClient.Logger.Logf("Got pull request URL \"%s\"", *pullRequestURL)
-	return *pullRequestURL, nil
+	pullRequestURL := pullRequest.Links.HTML.Href
+	githubClient.Logger.Logf("Got pull request URL \"%s\"", pullRequestURL)
+	return pullRequestURL, nil
 }
