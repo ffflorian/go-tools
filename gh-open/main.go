@@ -25,12 +25,28 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-const name = "gh-open"
-const version = "0.0.2"
-const description = "Open a GitHub repository in your browser."
+const (
+	description = "Open a GitHub repository in your browser."
+	name        = "gh-open"
+	version     = "0.0.2"
+)
+
+var justPrint = false
 
 func init() {
 	util.CheckFlags(name, version, description)
+
+	if util.GetFlagContext().IsSet("v") {
+		util.PrintAndExit(version)
+	}
+
+	if util.GetFlagContext().IsSet("h") {
+		util.PrintUsageAndExit(name, description)
+	}
+
+	if util.GetFlagContext().IsSet("p") {
+		justPrint = true
+	}
 }
 
 func main() {
@@ -43,7 +59,7 @@ func main() {
 	fullURL, fullURLError := git.GetFullURL(mainDir)
 	util.CheckError(fullURLError)
 
-	if util.GetFlagContext().IsSet("p") {
+	if justPrint == true {
 		util.PrintAndExit(fullURL)
 	}
 

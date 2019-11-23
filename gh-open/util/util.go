@@ -25,7 +25,11 @@ import (
 	"github.com/simonleung8/flags"
 )
 
-var flagContext = flags.New()
+var flagContext flags.FlagContext
+
+func init() {
+	flagContext = flags.New()
+}
 
 // GetFlagContext just returns the flag context
 func GetFlagContext() flags.FlagContext {
@@ -41,14 +45,6 @@ func CheckFlags(name string, version string, description string) {
 
 	parseError := flagContext.Parse(os.Args...)
 	CheckError(parseError)
-
-	if flagContext.IsSet("v") {
-		PrintAndExit(version)
-	}
-
-	if flagContext.IsSet("h") {
-		printUsageAndExit(name, description)
-	}
 }
 
 // GetArgsDir returns the directory provided via arguments
@@ -68,7 +64,7 @@ func GetArgsDir() (string, error) {
 	return "", nil
 }
 
-// CheckError checks if there is an error and if yes, exits with exit code 1
+// CheckError checks the error and if it exists, exits with exit code 1
 func CheckError(err error) {
 	if err != nil {
 		fmt.Println(err)
@@ -76,15 +72,12 @@ func CheckError(err error) {
 	}
 }
 
-func printUsageAndExit(name string, description string) {
-	fmt.Print(
+// PrintUsageAndExit prints the usage text and exits with exit code 0
+func PrintUsageAndExit(name string, description string) {
+	fmt.Printf(
+		"%s\n\nUsage:\n%s [flags] [directory]\n\nFlags:\n%s",
 		description,
-		"\n\n",
-		"Usage:\n",
-		"  ",
 		name,
-		" [flags] [directory]\n\n",
-		"Flags:\n",
 		flagContext.ShowUsage(2),
 	)
 	os.Exit(0)
