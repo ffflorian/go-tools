@@ -15,9 +15,18 @@ Usage:
   gh-open [flags] [directory]
 
 Flags:
+  --print, -p        just print the URL
+  --debug, -d        enable debug mode
   --version, -v      output the version number
   --help, -h         output usage information
-  --print, -p        just print the URL
+```
+
+Hint: You can also enable the debug mode by setting the environment variable `DEBUG` to "gh-open".
+
+Example:
+
+```
+NODE_DEBUG="gh-open" gh-open
 ```
 
 ## Test

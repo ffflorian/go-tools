@@ -20,8 +20,9 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/ffflorian/go-tools/gh-open/git"
-	"github.com/ffflorian/go-tools/gh-open/util"
+	"github.com/ffflorian/go-tools/gh-open/gitclient"
+	"github.com/ffflorian/go-tools/gh-open/simplelogger"
+	u "github.com/ffflorian/go-tools/gh-open/util"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -31,36 +32,44 @@ const (
 	version     = "0.0.2"
 )
 
-var justPrint = false
+func main() {
+	justPrint := false
+	logger := simplelogger.New(false, true)
+	util := u.New(name, version, description)
 
-func init() {
-	util.CheckFlags(name, version, description)
+	util.CheckFlags()
 
-	if util.GetFlagContext().IsSet("v") {
-		util.PrintAndExit(version)
+	if util.FlagContext.IsSet("d") {
+		logger.Enabled = true
 	}
 
-	if util.GetFlagContext().IsSet("h") {
-		util.PrintUsageAndExit(name, description)
+	logger.Log("Got arguments:", util.FlagContext.Args()[1:])
+
+	if util.FlagContext.IsSet("v") {
+		util.LogAndExit(version)
 	}
 
-	if util.GetFlagContext().IsSet("p") {
+	if util.FlagContext.IsSet("h") {
+		util.LogAndExit(util.GetUsage())
+	}
+
+	if util.FlagContext.IsSet("p") {
 		justPrint = true
 	}
-}
 
-func main() {
+	gitClient := gitclient.New(logger)
+
 	argsDir, argsDirError := util.GetArgsDir()
-	util.CheckError(argsDirError)
+	util.CheckError(argsDirError, true)
 
 	mainDir, absError := filepath.Abs(argsDir)
-	util.CheckError(absError)
+	util.CheckError(absError, false)
 
-	fullURL, fullURLError := git.GetFullURL(mainDir)
-	util.CheckError(fullURLError)
+	fullURL, fullURLError := gitClient.GetFullURL(mainDir)
+	util.CheckError(fullURLError, false)
 
 	if justPrint == true {
-		util.PrintAndExit(fullURL)
+		util.LogAndExit(fullURL)
 	}
 
 	open.Run(fullURL)
