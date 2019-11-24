@@ -29,7 +29,7 @@ import (
 const (
 	description = "Open a GitHub repository in your browser."
 	name        = "gh-open"
-	version     = "0.1.0"
+	version     = "0.1.1"
 )
 
 func main() {
