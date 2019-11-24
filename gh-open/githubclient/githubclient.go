@@ -36,11 +36,11 @@ type GitHubClient struct {
 // PullRequest represents a pull request on GitHub
 type PullRequest struct {
 	Head struct {
-		Branch string `json:"ref"`
+		Ref string `json:"ref"` // The branch reference
 	} `json:"head"`
 	Links struct {
 		HTML struct {
-			Href string `json:"href"`
+			Href string `json:"href"` // The pull request URL
 		} `json:"html"`
 	} `json:"_links"`
 }
@@ -56,7 +56,7 @@ func New(logger simplelogger.SimpleLogger, timeout time.Duration) GitHubClient {
 	return client
 }
 
-func (githubClient GitHubClient) request(urlPath string) ([]byte, error) {
+func (githubClient GitHubClient) request(urlPath string) (*[]byte, error) {
 	var httpClient = &http.Client{Timeout: githubClient.Timeout}
 	var fullURL = fmt.Sprintf("%s/%s", baseURL, urlPath)
 
@@ -76,28 +76,28 @@ func (githubClient GitHubClient) request(urlPath string) ([]byte, error) {
 		return nil, readError
 	}
 
-	return buffer, nil
+	return &buffer, nil
 }
 
 // GetPullRequests gets pull requests from GitHub,
 // see https://developer.github.com/v3/pulls/#list-pull-requests
-func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName string) ([]PullRequest, error) {
+func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName string) (*[]PullRequest, error) {
 	var pullRequests *[]PullRequest
 
 	fullURL := fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName)
-	buffer, requestError := githubClient.request(fullURL)
+	requestBuffer, requestError := githubClient.request(fullURL)
 	if requestError != nil {
 		return nil, requestError
 	}
 
-	unmarshalError := json.Unmarshal(buffer, &pullRequests)
+	unmarshalError := json.Unmarshal(*requestBuffer, &pullRequests)
 	if unmarshalError != nil {
 		return nil, unmarshalError
 	}
 
 	githubClient.Logger.Log("Got pull requests", *pullRequests)
 
-	return *pullRequests, nil
+	return pullRequests, nil
 }
 
 // GetPullRequestByBranch returns a pull request URL for the specified branch if it exists
@@ -108,8 +108,8 @@ func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoNam
 		return "", pullRequestError
 	}
 
-	for _, pullRequest := range pullRequests {
-		if pullRequest.Head.Branch == branch {
+	for _, pullRequest := range *pullRequests {
+		if pullRequest.Head.Ref == branch {
 			pullRequestURL := pullRequest.Links.HTML.Href
 			githubClient.Logger.Logf("Got pull request URL \"%s\"", pullRequestURL)
 			return pullRequestURL, nil
