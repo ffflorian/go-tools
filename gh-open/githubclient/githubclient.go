@@ -60,7 +60,7 @@ func New(timeout int, debugMode bool) *GitHubClient {
 	return githubClient
 }
 
-func (githubClient GitHubClient) request(urlPath string) (*[]byte, error) {
+func (githubClient *GitHubClient) request(urlPath string) (*[]byte, error) {
 	timeout := time.Duration(githubClient.Timeout) * time.Millisecond
 	httpClient := &http.Client{Timeout: timeout}
 	fullURL := fmt.Sprintf("%s/%s", baseURL, urlPath)
@@ -86,7 +86,7 @@ func (githubClient GitHubClient) request(urlPath string) (*[]byte, error) {
 
 // GetPullRequests gets pull requests from GitHub,
 // see https://developer.github.com/v3/pulls/#list-pull-requests
-func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName string) (*[]PullRequest, error) {
+func (githubClient *GitHubClient) GetPullRequests(repoUser string, repoName string) (*[]PullRequest, error) {
 	var pullRequests *[]PullRequest
 
 	fullURL := fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName)
@@ -106,7 +106,7 @@ func (githubClient GitHubClient) GetPullRequests(repoUser string, repoName strin
 }
 
 // GetPullRequestByBranch returns a pull request URL for the specified branch if it exists
-func (githubClient GitHubClient) GetPullRequestByBranch(repoUser string, repoName string, branch string) (string, error) {
+func (githubClient *GitHubClient) GetPullRequestByBranch(repoUser string, repoName string, branch string) (string, error) {
 	pullRequests, pullRequestError := githubClient.GetPullRequests(repoUser, repoName)
 
 	if pullRequestError != nil {

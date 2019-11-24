@@ -46,7 +46,7 @@ func New(name string, version string, description string) *Util {
 }
 
 // CheckFlags checks which command line flags are set
-func (util Util) CheckFlags() {
+func (util *Util) CheckFlags() {
 	util.FlagContext.NewBoolFlag("print", "p", "just print the URL")
 	util.FlagContext.NewIntFlagWithDefault("timeout", "t", "Set a custom timeout for HTTP requests", 2000)
 	util.FlagContext.NewBoolFlag("branch", "b", "open the branch tree (and not the PR)")
@@ -59,7 +59,7 @@ func (util Util) CheckFlags() {
 }
 
 // GetArgsDir returns the directory provided via arguments
-func (util Util) GetArgsDir() (string, error) {
+func (util *Util) GetArgsDir() (string, error) {
 	args := util.FlagContext.Args()
 
 	switch len(args) {
@@ -76,7 +76,7 @@ func (util Util) GetArgsDir() (string, error) {
 }
 
 // CheckError checks the error and if it exists, exits with exit code 1
-func (util Util) CheckError(err error, printUsage bool) {
+func (util *Util) CheckError(err error, printUsage bool) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
 		if printUsage {
@@ -87,7 +87,7 @@ func (util Util) CheckError(err error, printUsage bool) {
 }
 
 // GetUsage returns the usage text
-func (util Util) GetUsage() string {
+func (util *Util) GetUsage() string {
 	return fmt.Sprintf(
 		"%s\n\nUsage:\n  %s [options] [directory]\n\nOptions:\n%s",
 		util.Description,
@@ -97,7 +97,7 @@ func (util Util) GetUsage() string {
 }
 
 // LogAndExit logs one or more messages and exits with exit code 0
-func (util Util) LogAndExit(messages ...interface{}) {
+func (util *Util) LogAndExit(messages ...interface{}) {
 	fmt.Println(messages...)
 	os.Exit(0)
 }

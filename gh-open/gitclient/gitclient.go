@@ -56,7 +56,7 @@ func New(timeout int, debugMode bool) *GitClient {
 	return gitClient
 }
 
-func (gitClient GitClient) readFile(fileName string) (*[]byte, error) {
+func (gitClient *GitClient) readFile(fileName string) (*[]byte, error) {
 	file, openError := os.Open(fileName)
 
 	defer file.Close()
@@ -75,7 +75,7 @@ func (gitClient GitClient) readFile(fileName string) (*[]byte, error) {
 }
 
 // ParseBranch takes a git directory and returns it's current branch.
-func (gitClient GitClient) ParseBranch(gitDir string) ([]byte, error) {
+func (gitClient *GitClient) ParseBranch(gitDir string) ([]byte, error) {
 	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
 
 	if absError != nil {
@@ -105,7 +105,7 @@ func (gitClient GitClient) ParseBranch(gitDir string) ([]byte, error) {
 }
 
 // ParseRawURL takes a git directory and returns it's raw URL.
-func (gitClient GitClient) ParseRawURL(gitDir string) ([]byte, error) {
+func (gitClient *GitClient) ParseRawURL(gitDir string) ([]byte, error) {
 	gitConfigFile, absError := filepath.Abs(filepath.Join(gitDir, "config"))
 
 	if absError != nil {
@@ -135,7 +135,7 @@ func (gitClient GitClient) ParseRawURL(gitDir string) ([]byte, error) {
 }
 
 // FindGitDir takes a directory and returns it's next git directory.
-func (gitClient GitClient) FindGitDir(mainDir string) (string, error) {
+func (gitClient *GitClient) FindGitDir(mainDir string) (string, error) {
 	foundDir, walkError := gitClient.findUp(mainDir, ".git")
 
 	if walkError != nil {
@@ -145,7 +145,7 @@ func (gitClient GitClient) FindGitDir(mainDir string) (string, error) {
 	return foundDir, nil
 }
 
-func (gitClient GitClient) findUp(initialDir string, targetDir string) (string, error) {
+func (gitClient *GitClient) findUp(initialDir string, targetDir string) (string, error) {
 	var mainDir = &initialDir
 
 	if _, statError := os.Stat(initialDir); os.IsNotExist(statError) {
@@ -177,7 +177,7 @@ func (gitClient GitClient) findUp(initialDir string, targetDir string) (string, 
 }
 
 // GetFullURL takes a directory and (given it's inside a git repository) returns the repository's full URL.
-func (gitClient GitClient) GetFullURL(mainDir string) (string, error) {
+func (gitClient *GitClient) GetFullURL(mainDir string) (string, error) {
 	gitDir, findGitDirError := gitClient.FindGitDir(mainDir)
 
 	if findGitDirError != nil {
@@ -217,7 +217,7 @@ func (gitClient GitClient) GetFullURL(mainDir string) (string, error) {
 
 // GetPullRequestURL gets the according pull request URL from GitHub
 // if there is one
-func (gitClient GitClient) GetPullRequestURL(gitFullURL string) (string, error) {
+func (gitClient *GitClient) GetPullRequestURL(gitFullURL string) (string, error) {
 	pullRequestRegExp := regexp.MustCompile(pullRequestRegex)
 	fullURLMatches := pullRequestRegExp.FindStringSubmatch(gitFullURL)
 
