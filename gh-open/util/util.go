@@ -34,9 +34,9 @@ type Util struct {
 }
 
 // New returns a new instance of Util
-func New(name string, version string, description string) Util {
+func New(name string, version string, description string) *Util {
 	flagContext := flags.New()
-	util := Util{
+	util := &Util{
 		Description: description,
 		FlagContext: flagContext,
 		Name:        name,

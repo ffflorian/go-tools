@@ -34,8 +34,9 @@ const (
 
 func main() {
 	var (
-		logger = simplelogger.New(false, true)
-		utils  = util.New(name, version, description)
+		logger    = simplelogger.New("gh-open", false, true)
+		utils     = util.New(name, version, description)
+		debugMode = false
 	)
 
 	utils.CheckFlags()
@@ -46,6 +47,7 @@ func main() {
 
 	if utils.FlagContext.IsSet("d") {
 		logger.Enabled = true
+		debugMode = true
 	}
 
 	logger.Log("Got arguments:", utils.FlagContext.Args()[1:])
@@ -62,7 +64,7 @@ func main() {
 		utils.FlagContext.Int("t")
 	}
 
-	gitClient := gitclient.New(logger, timeout)
+	gitClient := gitclient.New(timeout, debugMode)
 
 	argsDir, argsDirError := utils.GetArgsDir()
 	utils.CheckError(argsDirError, true)
