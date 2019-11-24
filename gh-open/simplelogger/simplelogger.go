@@ -26,10 +26,11 @@ import (
 // SimpleLogger is a configuration struct for the logger
 type SimpleLogger struct {
 	Enabled bool
+	Prefix  string
 }
 
 // New returns a new instance of Logger
-func New(enabled bool, checkEnvironment bool) SimpleLogger {
+func New(prefix string, enabled bool, checkEnvironment bool) *SimpleLogger {
 	if checkEnvironment == true {
 		DEBUG := os.Getenv("DEBUG")
 		if strings.Contains(DEBUG, "gh-open") {
@@ -37,20 +38,28 @@ func New(enabled bool, checkEnvironment bool) SimpleLogger {
 		}
 	}
 
-	logger := SimpleLogger{Enabled: enabled}
+	logger := &SimpleLogger{
+		Enabled: enabled,
+		Prefix:  prefix,
+	}
+
 	return logger
+}
+
+func bold(message string) string {
+	return fmt.Sprintf("\033[1m%s\033[0m", message)
 }
 
 // Log logs one or more unformatted messages if the logger is enabled
 func (logger SimpleLogger) Log(messages ...interface{}) {
 	if logger.Enabled == true {
-		fmt.Printf("debug: %s", fmt.Sprintln(messages...))
+		fmt.Printf("%s %s", bold(logger.Prefix), fmt.Sprintln(messages...))
 	}
 }
 
 // Logf logs one or more formatted messages if the logger is enabled
 func (logger SimpleLogger) Logf(format string, messages ...interface{}) {
 	if logger.Enabled == true {
-		fmt.Printf("debug: %s\n", fmt.Sprintf(format, messages...))
+		fmt.Printf("%s %s\n", bold(logger.Prefix), fmt.Sprintf(format, messages...))
 	}
 }

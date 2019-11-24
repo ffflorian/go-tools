@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/ffflorian/go-tools/gh-open/githubclient"
 	"github.com/ffflorian/go-tools/gh-open/simplelogger"
@@ -33,8 +32,9 @@ import (
 
 // GitClient is a configuration struct for the git client
 type GitClient struct {
-	Logger  simplelogger.SimpleLogger
-	Timeout int
+	DebugMode bool
+	Logger    *simplelogger.SimpleLogger
+	Timeout   int
 }
 
 const (
@@ -45,12 +45,15 @@ const (
 )
 
 // New returns a new instance of GitClient
-func New(logger simplelogger.SimpleLogger, timeout int) GitClient {
-	git := GitClient{
-		Logger:  logger,
-		Timeout: timeout,
+func New(timeout int, debugMode bool) *GitClient {
+	logger := simplelogger.New("gh-open/gitclient", debugMode, true)
+	gitClient := &GitClient{
+		DebugMode: debugMode,
+		Logger:    logger,
+		Timeout:   timeout,
 	}
-	return git
+
+	return gitClient
 }
 
 func (gitClient GitClient) readFile(fileName string) (*[]byte, error) {
@@ -228,7 +231,7 @@ func (gitClient GitClient) GetPullRequestURL(gitFullURL string) (string, error) 
 
 	gitClient.Logger.Logf("Got user \"%s\", repo name \"%s\" and branch \"%s\"", repoUser, repoName, repoBranch)
 
-	githubClient := githubclient.New(gitClient.Logger, time.Duration(gitClient.Timeout)*time.Millisecond)
+	githubClient := githubclient.New(gitClient.Timeout, gitClient.DebugMode)
 
 	pullRequest, pullRequestError := githubClient.GetPullRequestByBranch(repoUser, repoName, repoBranch)
 	if pullRequestError != nil {

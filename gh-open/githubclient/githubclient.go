@@ -29,8 +29,9 @@ import (
 
 // GitHubClient is a configuration struct for the client
 type GitHubClient struct {
-	Logger  simplelogger.SimpleLogger
-	Timeout time.Duration
+	DebugMode bool
+	Logger    *simplelogger.SimpleLogger
+	Timeout   int
 }
 
 // PullRequest represents a pull request on GitHub
@@ -48,19 +49,23 @@ type PullRequest struct {
 const baseURL = "https://api.github.com"
 
 // New returns a new instance of GitHubClient
-func New(logger simplelogger.SimpleLogger, timeout time.Duration) GitHubClient {
-	client := GitHubClient{
-		Logger:  logger,
-		Timeout: timeout,
+func New(timeout int, debugMode bool) *GitHubClient {
+	logger := simplelogger.New("gh-open/githubclient", debugMode, true)
+	githubClient := &GitHubClient{
+		DebugMode: debugMode,
+		Logger:    logger,
+		Timeout:   timeout,
 	}
-	return client
+
+	return githubClient
 }
 
 func (githubClient GitHubClient) request(urlPath string) (*[]byte, error) {
-	var httpClient = &http.Client{Timeout: githubClient.Timeout}
-	var fullURL = fmt.Sprintf("%s/%s", baseURL, urlPath)
+	timeout := time.Duration(githubClient.Timeout) * time.Millisecond
+	httpClient := &http.Client{Timeout: timeout}
+	fullURL := fmt.Sprintf("%s/%s", baseURL, urlPath)
 
-	githubClient.Logger.Logf("Sending GET request to \"%s\" with timeout \"%s\" ...", fullURL, githubClient.Timeout)
+	githubClient.Logger.Logf("Sending GET request to \"%s\" with timeout \"%s\" ...", fullURL, timeout)
 
 	response, responseError := httpClient.Get(fullURL)
 	if responseError != nil {
