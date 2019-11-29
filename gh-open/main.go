@@ -34,20 +34,19 @@ const (
 
 func main() {
 	var (
-		logger    = simplelogger.New("gh-open", false, true)
-		utils     = util.New(name, version, description)
-		debugMode = false
+		logger = simplelogger.New("gh-open", false, true)
+		utils  = util.New(name, version, description)
 	)
 
 	utils.CheckFlags()
 
 	justPrint := utils.FlagContext.Bool("p")
 	justBranch := utils.FlagContext.Bool("b")
+	debugMode := utils.FlagContext.Bool("d")
 	timeout := utils.FlagContext.Int("t")
 
-	if utils.FlagContext.IsSet("d") {
+	if debugMode == true {
 		logger.Enabled = true
-		debugMode = true
 	}
 
 	logger.Log("Got arguments:", utils.FlagContext.Args()[1:])
