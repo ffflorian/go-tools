@@ -20,7 +20,7 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/ffflorian/go-tools/gh-open/gitclient"
+	"github.com/ffflorian/go-tools/gh-open/git"
 	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 	"github.com/ffflorian/go-tools/gh-open/util"
 	"github.com/skratchdot/open-golang/open"
@@ -63,7 +63,7 @@ func main() {
 		utils.FlagContext.Int("t")
 	}
 
-	gitClient := gitclient.New(timeout, debugMode)
+	gitClient := git.New(timeout, debugMode)
 
 	argsDir, argsDirError := utils.GetArgsDir()
 	utils.CheckError(argsDirError, true)
