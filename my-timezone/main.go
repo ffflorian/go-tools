@@ -82,7 +82,7 @@ func main() {
 	myTime, getTimeError := getTimeByLocation(ntpServer, parsedLongitude)
 	utils.CheckError(getTimeError, false)
 
-	fmt.Printf("Time in \"%s\": %s\n", argsLocation, myTime.Format("15:04:05"))
+	fmt.Printf("Your personal time in \"%s\": %s\n", argsLocation, myTime.Format("15:04:05"))
 }
 
 func getUTCDate(ntpServer string) (time.Time, error) {

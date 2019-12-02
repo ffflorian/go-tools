@@ -47,7 +47,7 @@ func New(name string, version string, description string) *Util {
 
 // CheckFlags checks which command line flags are set
 func (util *Util) CheckFlags() {
-	util.FlagContext.NewBoolFlag("offline", "o", "enable offline mode")
+	util.FlagContext.NewBoolFlag("offline", "o", "enable offline mode (disables city matching)")
 	util.FlagContext.NewStringFlagWithDefault("server", "s", "set the NTP server (default is \"pool.ntp.org\")", "pool.ntp.org")
 	util.FlagContext.NewIntFlagWithDefault("timeout", "t", "set a custom timeout for HTTP requests (default is 2000ms)", 2000)
 	util.FlagContext.NewBoolFlag("debug", "d", "enable debug mode")
@@ -83,8 +83,9 @@ func (util *Util) CheckError(err error, printUsage bool) {
 // GetUsage returns the usage text
 func (util *Util) GetUsage() string {
 	return fmt.Sprintf(
-		"%s\n\nUsage:\n  %s [options] [location]\n\nOptions:\n%s",
+		"%s\n\n%s.\n\nUsage:\n  %s [options] [location]\n\nOptions:\n%s",
 		util.Description,
+		"For the `location` argument you can either use coordinates (e.g. 52.5502,13.4304)\nor a city name (e.g. \"Berlin, Germany\")",
 		util.Name,
 		util.FlagContext.ShowUsage(2),
 	)
