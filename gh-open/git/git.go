@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package gitclient
+package git
 
 import (
 	"errors"
@@ -26,12 +26,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ffflorian/go-tools/gh-open/githubclient"
+	"github.com/ffflorian/go-tools/gh-open/github"
 	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 )
 
-// GitClient is a configuration struct for the git client
-type GitClient struct {
+// Client is a configuration struct for the git client
+type Client struct {
 	DebugMode bool
 	Logger    *simplelogger.SimpleLogger
 	Timeout   int
@@ -44,10 +44,10 @@ const (
 	rawURLRegex      = `(?mi).*url = (.*)`
 )
 
-// New returns a new instance of GitClient
-func New(timeout int, debugMode bool) *GitClient {
+// New returns a new instance of Client
+func New(timeout int, debugMode bool) *Client {
 	logger := simplelogger.New("gh-open/gitclient", debugMode, true)
-	gitClient := &GitClient{
+	gitClient := &Client{
 		DebugMode: debugMode,
 		Logger:    logger,
 		Timeout:   timeout,
@@ -56,7 +56,7 @@ func New(timeout int, debugMode bool) *GitClient {
 	return gitClient
 }
 
-func (gitClient *GitClient) readFile(fileName string) (*[]byte, error) {
+func (gitClient *Client) readFile(fileName string) (*[]byte, error) {
 	file, openError := os.Open(fileName)
 
 	defer file.Close()
@@ -75,7 +75,7 @@ func (gitClient *GitClient) readFile(fileName string) (*[]byte, error) {
 }
 
 // ParseBranch takes a git directory and returns it's current branch.
-func (gitClient *GitClient) ParseBranch(gitDir string) ([]byte, error) {
+func (gitClient *Client) ParseBranch(gitDir string) ([]byte, error) {
 	gitHeadFile, absError := filepath.Abs(filepath.Join(gitDir, "HEAD"))
 
 	if absError != nil {
@@ -105,7 +105,7 @@ func (gitClient *GitClient) ParseBranch(gitDir string) ([]byte, error) {
 }
 
 // ParseRawURL takes a git directory and returns it's raw URL.
-func (gitClient *GitClient) ParseRawURL(gitDir string) ([]byte, error) {
+func (gitClient *Client) ParseRawURL(gitDir string) ([]byte, error) {
 	gitConfigFile, absError := filepath.Abs(filepath.Join(gitDir, "config"))
 
 	if absError != nil {
@@ -135,7 +135,7 @@ func (gitClient *GitClient) ParseRawURL(gitDir string) ([]byte, error) {
 }
 
 // FindGitDir takes a directory and returns it's next git directory.
-func (gitClient *GitClient) FindGitDir(mainDir string) (string, error) {
+func (gitClient *Client) FindGitDir(mainDir string) (string, error) {
 	foundDir, walkError := gitClient.findUp(mainDir, ".git")
 
 	if walkError != nil {
@@ -145,7 +145,7 @@ func (gitClient *GitClient) FindGitDir(mainDir string) (string, error) {
 	return foundDir, nil
 }
 
-func (gitClient *GitClient) findUp(initialDir string, targetDir string) (string, error) {
+func (gitClient *Client) findUp(initialDir string, targetDir string) (string, error) {
 	var mainDir = &initialDir
 
 	if _, statError := os.Stat(initialDir); os.IsNotExist(statError) {
@@ -177,7 +177,7 @@ func (gitClient *GitClient) findUp(initialDir string, targetDir string) (string,
 }
 
 // GetFullURL takes a directory and (given it's inside a git repository) returns the repository's full URL.
-func (gitClient *GitClient) GetFullURL(mainDir string) (string, error) {
+func (gitClient *Client) GetFullURL(mainDir string) (string, error) {
 	gitDir, findGitDirError := gitClient.FindGitDir(mainDir)
 
 	if findGitDirError != nil {
@@ -217,7 +217,7 @@ func (gitClient *GitClient) GetFullURL(mainDir string) (string, error) {
 
 // GetPullRequestURL gets the according pull request URL from GitHub
 // if there is one
-func (gitClient *GitClient) GetPullRequestURL(gitFullURL string) (string, error) {
+func (gitClient *Client) GetPullRequestURL(gitFullURL string) (string, error) {
 	pullRequestRegExp := regexp.MustCompile(pullRequestRegex)
 	fullURLMatches := pullRequestRegExp.FindStringSubmatch(gitFullURL)
 
@@ -231,7 +231,7 @@ func (gitClient *GitClient) GetPullRequestURL(gitFullURL string) (string, error)
 
 	gitClient.Logger.Logf("Got user \"%s\", repo name \"%s\" and branch \"%s\"", repoUser, repoName, repoBranch)
 
-	githubClient := githubclient.New(gitClient.Timeout, gitClient.DebugMode)
+	githubClient := github.New(gitClient.Timeout, gitClient.DebugMode)
 
 	pullRequest, pullRequestError := githubClient.GetPullRequestByBranch(repoUser, repoName, repoBranch)
 	if pullRequestError != nil {
