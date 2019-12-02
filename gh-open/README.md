@@ -28,7 +28,7 @@ Hint: You can also enable the debug mode by setting the environment variable `DE
 Example:
 
 ```
-NODE_DEBUG="gh-open" gh-open
+DEBUG="gh-open" gh-open
 ```
 
 ## Test
