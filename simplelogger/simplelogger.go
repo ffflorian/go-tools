@@ -23,7 +23,7 @@ import (
 	"strings"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 // SimpleLogger is a configuration struct for the logger
 type SimpleLogger struct {
