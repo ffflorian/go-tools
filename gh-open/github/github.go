@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package githubclient
+package github
 
 import (
 	"encoding/json"
@@ -24,11 +24,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ffflorian/go-tools/gh-open/simplelogger"
+	"github.com/ffflorian/go-tools/simplelogger"
 )
 
-// GitHubClient is a configuration struct for the client
-type GitHubClient struct {
+// Client is a configuration struct for the GitHub client
+type Client struct {
 	DebugMode bool
 	Logger    *simplelogger.SimpleLogger
 	Timeout   int
@@ -48,10 +48,10 @@ type PullRequest struct {
 
 const baseURL = "https://api.github.com"
 
-// New returns a new instance of GitHubClient
-func New(timeout int, debugMode bool) *GitHubClient {
+// New returns a new instance of Client
+func New(timeout int, debugMode bool) *Client {
 	logger := simplelogger.New("gh-open/githubclient", debugMode, true)
-	githubClient := &GitHubClient{
+	githubClient := &Client{
 		DebugMode: debugMode,
 		Logger:    logger,
 		Timeout:   timeout,
@@ -60,7 +60,7 @@ func New(timeout int, debugMode bool) *GitHubClient {
 	return githubClient
 }
 
-func (githubClient *GitHubClient) request(urlPath string) (*[]byte, error) {
+func (githubClient *Client) request(urlPath string) (*[]byte, error) {
 	timeout := time.Duration(githubClient.Timeout) * time.Millisecond
 	httpClient := &http.Client{Timeout: timeout}
 	fullURL := fmt.Sprintf("%s/%s", baseURL, urlPath)
@@ -86,11 +86,11 @@ func (githubClient *GitHubClient) request(urlPath string) (*[]byte, error) {
 
 // GetPullRequests gets pull requests from GitHub,
 // see https://developer.github.com/v3/pulls/#list-pull-requests
-func (githubClient *GitHubClient) GetPullRequests(repoUser string, repoName string) (*[]PullRequest, error) {
+func (githubClient *Client) GetPullRequests(repoUser string, repoName string) (*[]PullRequest, error) {
 	var pullRequests *[]PullRequest
 
-	fullURL := fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName)
-	requestBuffer, requestError := githubClient.request(fullURL)
+	urlPath := fmt.Sprintf("repos/%s/%s/pulls", repoUser, repoName)
+	requestBuffer, requestError := githubClient.request(urlPath)
 	if requestError != nil {
 		return nil, requestError
 	}
@@ -106,7 +106,7 @@ func (githubClient *GitHubClient) GetPullRequests(repoUser string, repoName stri
 }
 
 // GetPullRequestByBranch returns a pull request URL for the specified branch if it exists
-func (githubClient *GitHubClient) GetPullRequestByBranch(repoUser string, repoName string, branch string) (string, error) {
+func (githubClient *Client) GetPullRequestByBranch(repoUser string, repoName string, branch string) (string, error) {
 	pullRequests, pullRequestError := githubClient.GetPullRequests(repoUser, repoName)
 
 	if pullRequestError != nil {
