@@ -26,7 +26,7 @@ import (
 
 	"github.com/beevik/ntp"
 	"github.com/ffflorian/go-tools/simplelogger"
-	"github.com/ffflorian/go-tools/my-timezone/nominatimclient"
+	"github.com/ffflorian/go-tools/my-timezone/nominatim"
 	"github.com/ffflorian/go-tools/my-timezone/util"
 )
 
@@ -116,7 +116,7 @@ func locationToLongitude(location string) (float64, error) {
 	longitudeMatch := longitudeRegExp.FindStringSubmatch(location)
 
 	if len(longitudeMatch) == 0 {
-		nominatimClient := nominatimclient.New(10000, debugMode)
+		nominatimClient := nominatim.New(10000, debugMode)
 		longitude, longitudeError := nominatimClient.GetLongitudeByName(location)
 
 		if longitudeError != nil {
