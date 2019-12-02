@@ -35,7 +35,7 @@ type SimpleLogger struct {
 func New(prefix string, enabled bool, checkEnvironment bool) *SimpleLogger {
 	if checkEnvironment == true {
 		DEBUG := os.Getenv("DEBUG")
-		if strings.Contains(DEBUG, "gh-open") {
+		if strings.Contains(DEBUG, prefix) {
 			enabled = true
 		}
 	}
