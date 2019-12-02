@@ -3,3 +3,4 @@
 A small collection of useful tools written in Go:
 
 * [gh-open](./gh-open): Open a GitHub repository in your browser.
+* [simplelogger](./simplelogger): A simple logger.
