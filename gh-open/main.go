@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 
 	"github.com/ffflorian/go-tools/gh-open/git"
-	"github.com/ffflorian/go-tools/gh-open/simplelogger"
 	"github.com/ffflorian/go-tools/gh-open/util"
+	"github.com/ffflorian/go-tools/simplelogger"
 	"github.com/skratchdot/open-golang/open"
 )
 

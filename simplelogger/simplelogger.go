@@ -38,12 +38,10 @@ func New(prefix string, enabled bool, checkEnvironment bool) *SimpleLogger {
 		}
 	}
 
-	logger := &SimpleLogger{
+	return &SimpleLogger{
 		Enabled: enabled,
 		Prefix:  prefix,
 	}
-
-	return logger
 }
 
 func bold(message string) string {
