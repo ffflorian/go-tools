@@ -47,7 +47,9 @@ func New(name string, version string, description string) *Util {
 
 // CheckFlags checks which command line flags are set
 func (util *Util) CheckFlags() {
+	util.FlagContext.NewBoolFlag("offline", "o", "enable offline mode")
 	util.FlagContext.NewStringFlagWithDefault("server", "s", "set the NTP server (default is \"pool.ntp.org\")", "pool.ntp.org")
+	util.FlagContext.NewIntFlagWithDefault("timeout", "t", "set a custom timeout for HTTP requests (default is 2000ms)", 2000)
 	util.FlagContext.NewBoolFlag("debug", "d", "enable debug mode")
 	util.FlagContext.NewBoolFlag("version", "v", "output the version number")
 	util.FlagContext.NewBoolFlag("help", "h", "output usage information")
@@ -81,7 +83,7 @@ func (util *Util) CheckError(err error, printUsage bool) {
 // GetUsage returns the usage text
 func (util *Util) GetUsage() string {
 	return fmt.Sprintf(
-		"%s\n\nUsage:\n  %s [options] [directory]\n\nOptions:\n%s",
+		"%s\n\nUsage:\n  %s [options] [location]\n\nOptions:\n%s",
 		util.Description,
 		util.Name,
 		util.FlagContext.ShowUsage(2),

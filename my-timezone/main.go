@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/beevik/ntp"
-	"github.com/ffflorian/go-tools/simplelogger"
 	"github.com/ffflorian/go-tools/my-timezone/nominatim"
 	"github.com/ffflorian/go-tools/my-timezone/util"
+	"github.com/ffflorian/go-tools/simplelogger"
 )
 
 const (
@@ -36,9 +36,11 @@ const (
 	version     = "0.0.1"
 )
 
-// Berlin: 13.430428
-
-var debugMode = false
+var (
+	debugMode   = false
+	offlineMode = false
+	timeout     int
+)
 
 func main() {
 	var (
@@ -49,7 +51,9 @@ func main() {
 	utils.CheckFlags()
 
 	ntpServer := utils.FlagContext.String("s")
+	offlineMode = utils.FlagContext.Bool("o")
 	debugMode = utils.FlagContext.Bool("d")
+	timeout = utils.FlagContext.Int("t")
 
 	if debugMode == true {
 		logger.Enabled = true
@@ -76,20 +80,23 @@ func main() {
 	utils.CheckError(parseLongitudeError, true)
 
 	myTime, getTimeError := getTimeByLocation(ntpServer, parsedLongitude)
-
 	utils.CheckError(getTimeError, false)
 
 	fmt.Printf("Time in \"%s\": %s\n", argsLocation, myTime.Format("15:04:05"))
 }
 
 func getUTCDate(ntpServer string) (time.Time, error) {
-	response, err := ntp.Query(ntpServer)
-	if err != nil {
-		return time.Now(), err
+	options := ntp.QueryOptions{
+		Timeout: time.Duration(time.Duration(timeout) * time.Millisecond),
 	}
-	time := time.Now().Add(response.ClockOffset)
 
-	return time, nil
+	queryResult, queryError := ntp.QueryWithOptions(ntpServer, options)
+
+	if queryError != nil {
+		return time.Now(), queryError
+	}
+
+	return queryResult.Time, nil
 }
 
 func calculateDistance(from float64, to float64) float64 {
@@ -97,10 +104,18 @@ func calculateDistance(from float64, to float64) float64 {
 }
 
 func getTimeByLocation(ntpServer string, longitude float64) (time.Time, error) {
-	now, getUTCDateError := getUTCDate(ntpServer)
-	if getUTCDateError != nil {
-		return time.Now().UTC(), getUTCDateError
+	var now time.Time
+
+	if offlineMode == true {
+		now = time.Now()
+	} else {
+		utcTime, getUTCDateError := getUTCDate(ntpServer)
+		if getUTCDateError != nil {
+			return time.Now().UTC(), getUTCDateError
+		}
+		now = utcTime
 	}
+
 	distance := calculateDistance(0, longitude)
 	distanceSeconds := distance / 0.004167
 
