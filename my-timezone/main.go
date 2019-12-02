@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/beevik/ntp"
-	"github.com/ffflorian/go-tools/gh-open/simplelogger"
+	"github.com/ffflorian/go-tools/simplelogger"
 	"github.com/ffflorian/go-tools/my-timezone/nominatimclient"
 	"github.com/ffflorian/go-tools/my-timezone/util"
 )

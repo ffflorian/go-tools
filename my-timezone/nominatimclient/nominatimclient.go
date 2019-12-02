@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ffflorian/go-tools/gh-open/simplelogger"
+	"github.com/ffflorian/go-tools/simplelogger"
 )
 
 // Client is a configuration struct for nominatim
