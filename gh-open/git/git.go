@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/ffflorian/go-tools/gh-open/github"
-	"github.com/ffflorian/go-tools/gh-open/simplelogger"
+	"github.com/ffflorian/go-tools/simplelogger"
 )
 
 // Client is a configuration struct for the git client
