@@ -17,6 +17,11 @@ var logger = simplelogger.New("my-app", false, true)
                             //                   |
                             //                   > check environment variables?
 
+
+// do something
+
+logger.Enabled = true
+
 logger.Log("Hello, world!")
 ```
 
@@ -25,6 +30,10 @@ var logger = &simplelogger.Logger{
 	Enabled: false
 	Prefix:  "my-app"
 }
+
+// do something
+
+logger.Enabled = true
 
 logger.Log("Hello, world!")
 ```
