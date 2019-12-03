@@ -36,13 +36,13 @@ type Util struct {
 // New returns a new instance of Util
 func New(name string, version string, description string) *Util {
 	flagContext := flags.New()
-	util := &Util{
+
+	return &Util{
 		Description: description,
 		FlagContext: flagContext,
 		Name:        name,
 		Version:     version,
 	}
-	return util
 }
 
 // CheckFlags checks which command line flags are set

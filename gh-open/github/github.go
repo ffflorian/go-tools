@@ -51,13 +51,12 @@ const baseURL = "https://api.github.com"
 // New returns a new instance of Client
 func New(timeout int, debugMode bool) *Client {
 	logger := simplelogger.New("gh-open/githubclient", debugMode, true)
-	githubClient := &Client{
+
+	return &Client{
 		DebugMode: debugMode,
 		Logger:    logger,
 		Timeout:   timeout,
 	}
-
-	return githubClient
 }
 
 func (githubClient *Client) request(urlPath string) (*[]byte, error) {
