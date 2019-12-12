@@ -50,6 +50,10 @@ func bold(message string) string {
 	return fmt.Sprintf("\033[1m%s\033[0m", message)
 }
 
+func red(message string) string {
+	return fmt.Sprintf("\033[91m%s\033[0m", message)
+}
+
 // Log logs one or more unformatted messages if the logger is enabled
 func (logger *SimpleLogger) Log(messages ...interface{}) {
 	if logger.Enabled == true {
@@ -61,5 +65,19 @@ func (logger *SimpleLogger) Log(messages ...interface{}) {
 func (logger *SimpleLogger) Logf(format string, messages ...interface{}) {
 	if logger.Enabled == true {
 		fmt.Printf("%s %s\n", bold(logger.Prefix), fmt.Sprintf(format, messages...))
+	}
+}
+
+// Error logs one or more unformatted messages to stderr if the logger is enabled
+func (logger *SimpleLogger) Error(messages ...interface{}) {
+	if logger.Enabled == true {
+		fmt.Fprintf(os.Stderr, "%s %s %s", bold(red(logger.Prefix)), red("Error:"), red(fmt.Sprintln(messages...)))
+	}
+}
+
+// Errorf logs one or more formatted messages to stderr if the logger is enabled
+func (logger *SimpleLogger) Errorf(format string, messages ...interface{}) {
+	if logger.Enabled == true {
+		fmt.Fprintf(os.Stderr, "%s %s %s\n", bold(red(logger.Prefix)), red("Error:"), red(fmt.Sprintf(format, messages...)))
 	}
 }

@@ -77,7 +77,7 @@ func main() {
 	if justBranch == false {
 		pullRequest, pullRequestError := gitClient.GetPullRequestURL(fullURL)
 		if pullRequestError != nil {
-			logger.Log(pullRequestError)
+			logger.Error(pullRequestError)
 		}
 		if pullRequest != "" {
 			fullURL = pullRequest
