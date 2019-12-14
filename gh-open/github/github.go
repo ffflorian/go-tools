@@ -19,6 +19,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -74,6 +75,10 @@ func (githubClient *Client) request(urlPath string) (*[]byte, error) {
 	defer response.Body.Close()
 
 	githubClient.Logger.Logf("Got response status code \"%d\"", response.StatusCode)
+
+	if response.StatusCode != 200 {
+		return nil, errors.New("Invalid response status code")
+	}
 
 	buffer, readError := ioutil.ReadAll(response.Body)
 	if readError != nil {
