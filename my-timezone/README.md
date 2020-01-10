@@ -1,4 +1,4 @@
-# my-timezone [![Build Status](https://action-badges.now.sh/ffflorian/go-tools)](https://github.com/ffflorian/go-tools/actions/) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ffflorian/go-tools)](https://dependabot.com)
+# my-timezone [![Build Status](https://github.com/ffflorian/wire-bots/workflows/Build/badge.svg)](https://github.com/ffflorian/go-tools/actions/) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ffflorian/go-tools)](https://dependabot.com)
 
 Calculate the exact time based on your location.
 

@@ -1,4 +1,4 @@
-# simplelogger [![Build Status](https://action-badges.now.sh/ffflorian/go-tools)](https://github.com/ffflorian/go-tools/actions/) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ffflorian/go-tools)](https://dependabot.com)
+# simplelogger [![Build Status](https://github.com/ffflorian/wire-bots/workflows/Build/badge.svg)](https://github.com/ffflorian/go-tools/actions/) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ffflorian/go-tools)](https://dependabot.com)
 
 This is a simple logger.
 
