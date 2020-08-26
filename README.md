@@ -1,4 +1,4 @@
-# go-tools [![Build Status](https://github.com/ffflorian/wire-bots/workflows/Build/badge.svg)](https://github.com/ffflorian/go-tools/actions/) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ffflorian/go-tools)](https://dependabot.com)
+# go-tools [![Build Status](https://github.com/ffflorian/wire-bots/workflows/Build/badge.svg)](https://github.com/ffflorian/go-tools/actions/)
 
 A small collection of useful tools written in Go:
 

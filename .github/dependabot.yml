@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: '/'
+    schedule:
+      interval: daily
+      time: '07:00'
+      timezone: 'Europe/Berlin'
+    open-pull-requests-limit: 99
+    assignees:
+      - ffflorian
