@@ -9,10 +9,10 @@ jobs:
       !contains(github.event.head_commit.message, '[ci skip]') &&
       !contains(github.event.head_commit.message, '[skip ci]')
     steps:
-    - name: Set up Go 1.13
+    - name: Set up Go 1.15.x
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13
+        go-version: 1.15.x
     - name: Check out repository
       uses: actions/checkout@v1
     - name: Get dependencies
