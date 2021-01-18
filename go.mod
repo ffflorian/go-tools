@@ -1,6 +1,6 @@
 module github.com/ffflorian/go-tools
 
-go 1.13
+go 1.15
 
 require (
 	github.com/beevik/ntp v0.3.0
