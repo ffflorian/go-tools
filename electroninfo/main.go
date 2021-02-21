@@ -1,5 +1,5 @@
 /*
-Copyright © 2019 Florian Imdahl <git@ffflorian.de>
+Copyright © 2021 Florian Imdahl <git@ffflorian.de>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package main
 import (
 	"os"
 
-	"github.com/ffflorian/go-tools/electroninfo/fileservice"
 	"github.com/ffflorian/go-tools/electroninfo/httpservice"
 	"github.com/ffflorian/go-tools/electroninfo/util"
 	"github.com/ffflorian/go-tools/simplelogger"
@@ -33,68 +32,43 @@ const (
 	version     = "0.0.1"
 )
 
+var logger = simplelogger.New("electroninfo", false, true)
+
 func main() {
-	var (
-		logger      = simplelogger.New("electroninfo", false, true)
-		tablewriter = tablewriter.NewWriter(os.Stdout)
-		util        = util.New(name, version, description)
-	)
+	util := util.New(name, version, description)
 
 	util.CheckFlags()
 
+	debugMode := util.FlagContext.Bool("d")
 	timeout := util.FlagContext.Int("t")
-	debug := util.FlagContext.Bool("d")
-	force := util.FlagContext.Bool("f")
-	version := util.FlagContext.Bool("v")
-	raw := util.FlagContext.Bool("r")
-	help := util.FlagContext.Bool("h")
 
-	if debug == true {
-		logger.Enabled = true
+	logger.Enabled = true
+
+	httpService := httpservice.New(timeout, debugMode)
+
+	buildTable(httpService)
+}
+
+func buildTable(httpService *httpservice.HTTPService) {
+	var releases, releasesErr = httpService.GetReleases()
+	if releasesErr != nil {
+		logger.Error(releasesErr)
+		os.Exit(1)
 	}
 
-	fileservice := fileservice.New(debug)
-	httpservice := httpservice.New(timeout, debug)
-
-	logger.Log("Got arguments:", util.FlagContext.Args()[1:])
-
-	if version == true {
-		util.LogAndExit(version)
-	}
-
-	if help == true {
-		util.LogAndExit(util.GetUsage())
-	}
-
-	if util.FlagContext.IsSet("t") {
-		util.FlagContext.Int("t")
-	}
-
-	fileservice.Hello()
-	httpservice.Hello()
-
-	// gitClient := git.New(timeout, debugMode)
-
-	// argsDir, argsDirError := util.GetArgsDir()
-	// util.CheckError(argsDirError, true)
-
-	// mainDir, absError := filepath.Abs(argsDir)
-	// util.CheckError(absError, false)
-
-	// fullURL, fullURLError := gitClient.GetFullURL(mainDir)
-	// util.CheckError(fullURLError, false)
-
-	// if justBranch == false {
-	// 	pullRequest, pullRequestError := gitClient.GetPullRequestURL(fullURL)
-	// 	if pullRequestError != nil {
-	// 		logger.Error(pullRequestError)
-	// 	}
-	// 	if pullRequest != "" {
-	// 		fullURL = pullRequest
-	// 	}
-	// }
-
-	if raw == true {
-		util.LogAndExit("hey there")
-	}
+	firstRelease := (*releases)[0]
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.AppendBulk([][]string{
+		{"Electron", firstRelease.Version},
+		{"Published on", firstRelease.PublishedAt},
+		{"Node.js", firstRelease.Deps.Node},
+		{"Chrome", firstRelease.Deps.Chrome},
+		{"OpenSSL", firstRelease.Deps.OpenSSL},
+		{"Modules (Node ABI)", firstRelease.Deps.Modules},
+		{"uv", firstRelease.Deps.Uv},
+		{"V8", firstRelease.Deps.V8},
+		{"zlib", firstRelease.Deps.Zlib},
+	})
+	table.Render()
 }
