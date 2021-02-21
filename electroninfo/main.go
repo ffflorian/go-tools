@@ -57,9 +57,13 @@ func buildTable(httpService *httpservice.HTTPService) {
 	}
 
 	firstRelease := (*releases)[0]
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.AppendBulk([][]string{
+	writer := tablewriter.NewWriter(os.Stdout)
+	writer.SetAlignment(tablewriter.ALIGN_LEFT)
+	writer.SetRowSeparator("─")
+	writer.SetRowLine(true)
+	writer.SetCenterSeparator("+")
+	writer.SetColumnSeparator("│")
+	writer.AppendBulk([][]string{
 		{"Electron", firstRelease.Version},
 		{"Published on", firstRelease.PublishedAt},
 		{"Node.js", firstRelease.Deps.Node},
@@ -70,5 +74,5 @@ func buildTable(httpService *httpservice.HTTPService) {
 		{"V8", firstRelease.Deps.V8},
 		{"zlib", firstRelease.Deps.Zlib},
 	})
-	table.Render()
+	writer.Render()
 }
