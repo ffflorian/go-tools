@@ -9,5 +9,5 @@ require (
 	github.com/simonleung8/flags v0.0.0-20170704170018-8020ed7bcf1a
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933 // indirect
+	golang.org/x/net v0.7.0 // indirect
 )
