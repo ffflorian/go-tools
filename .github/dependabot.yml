@@ -14,3 +14,5 @@ updates:
     open-pull-requests-limit: 99
     assignees:
       - ffflorian
+    cooldown:
+      default-days: 5
