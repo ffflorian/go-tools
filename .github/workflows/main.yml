@@ -1,11 +1,17 @@
 name: Build
-on: push
 
-permissions:
-  contents: read
+permissions: {}
+
+on:
+ push:
+   branches: [main]
+ pull_request:
+   branches: [main]
 
 jobs:
   build:
+    permissions:
+      contents: read
     name: Build
     runs-on: ubuntu-latest
     if: |
