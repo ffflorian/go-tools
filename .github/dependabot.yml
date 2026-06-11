@@ -1,22 +1,26 @@
-version: 2
 updates:
-  - package-ecosystem: gomod
-    directory: '/'
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 99
-    assignees:
+  - assignees:
       - ffflorian
+    commit-message:
+      prefix: chore(deps)
     cooldown:
       default-days: 5
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+    directory: /
+    open-pull-requests-limit: 99
+    package-ecosystem: gomod
     schedule:
       interval: weekly
-    open-pull-requests-limit: 99
-    assignees:
+  - assignees:
       - ffflorian
+    commit-message:
+      prefix: ci(deps)
     cooldown:
       default-days: 5
       exclude:
-        - 'ffflorian/*'
+        - ffflorian/*
+    directory: /
+    open-pull-requests-limit: 99
+    package-ecosystem: github-actions
+    schedule:
+      interval: weekly
+version: 2
